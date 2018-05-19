@@ -23,9 +23,14 @@ typedef struct _CAMERA {
 CAMERA cam[CAM_NUM];
 int cam_selected;
 
+enum VIEW {
+	TOP_VIEW = 0,  FRONT_VIEW, SIDE_VIEW
+}VIEW;
+
 typedef struct _VIEWPORT {
 	int x, y, w, h;
 }VIEWPORT;
+
 VIEWPORT viewport[CAM_NUM];
 
 glm::mat4 ModelViewProjectionMatrix;
@@ -54,33 +59,44 @@ void set_ViewMatrix(int cam_idx) {
 	ViewMatrix[cam_idx] = glm::translate(ViewMatrix[cam_idx], -cam[cam_idx].pos);
 }
 
+void display_camera(int cam_idx) {
+
+	glViewport(viewport[cam_idx].x, viewport[cam_idx].y, viewport[cam_idx].w, viewport[cam_idx].h);
+	
+	ModelViewProjectionMatrix = glm::scale(ViewProjectionMatrix[cam_idx], glm::vec3(5.0f, 5.0f, 5.0f));
+	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+
+	glLineWidth(2.0f);
+	draw_axes(cam_idx);
+	glLineWidth(1.0f);
+
+	draw_static_object(&(static_objects[OBJ_BUILDING]), 0, cam_idx);
+
+	draw_static_object(&(static_objects[OBJ_TABLE]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_TABLE]), 1, cam_idx);
+
+	draw_static_object(&(static_objects[OBJ_LIGHT]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_LIGHT]), 1, cam_idx);
+	draw_static_object(&(static_objects[OBJ_LIGHT]), 2, cam_idx);
+	draw_static_object(&(static_objects[OBJ_LIGHT]), 3, cam_idx);
+	draw_static_object(&(static_objects[OBJ_LIGHT]), 4, cam_idx);
+
+	draw_static_object(&(static_objects[OBJ_TEAPOT]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_NEW_CHAIR]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_FRAME]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_NEW_PICTURE]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_COW]), 0, cam_idx);
+
+	draw_animated_tiger(cam_idx);
+
+}
+
 
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	 
-	glLineWidth(2.0f);
-	draw_axes(0);
-	glLineWidth(1.0f);
- 
-    draw_static_object(&(static_objects[OBJ_BUILDING]), 0,0);
-
-	draw_static_object(&(static_objects[OBJ_TABLE]), 0,0);
-	draw_static_object(&(static_objects[OBJ_TABLE]), 1,0);
-
-	draw_static_object(&(static_objects[OBJ_LIGHT]), 0, 0);
-	draw_static_object(&(static_objects[OBJ_LIGHT]), 1, 0);
-	draw_static_object(&(static_objects[OBJ_LIGHT]), 2, 0);
-	draw_static_object(&(static_objects[OBJ_LIGHT]), 3, 0);
-	draw_static_object(&(static_objects[OBJ_LIGHT]), 4, 0);
-
-	draw_static_object(&(static_objects[OBJ_TEAPOT]), 0, 0);
-	draw_static_object(&(static_objects[OBJ_NEW_CHAIR]), 0,0);
- 	draw_static_object(&(static_objects[OBJ_FRAME]), 0,0);
-	draw_static_object(&(static_objects[OBJ_NEW_PICTURE]), 0,0);
-	draw_static_object(&(static_objects[OBJ_COW]), 0,0);
-
-	draw_animated_tiger(0);
-
+	display_camera(TOP_VIEW);
+	display_camera(FRONT_VIEW);
+	display_camera(SIDE_VIEW);
 	glutSwapBuffers();
 }
 
@@ -142,17 +158,31 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 void reshape(int width, int height) {
-	cam[0].aspect_ratio = (float)width / height;
-	viewport[0].x = viewport[1].y = 0;
-	viewport[0].w = (int)(0.70f*width); viewport[0].h = (int)(0.70f*height);
-	ProjectionMatrix[0] = glm::perspective(cam[0].fov_y*TO_RADIAN, cam[0].aspect_ratio, cam[0].near_clip, cam[0].far_clip);
-	ViewProjectionMatrix[0] = ProjectionMatrix[0] * ViewMatrix[0];
 
-	cam[1].aspect_ratio = cam[0].aspect_ratio; // for the time being ...
-	viewport[1].x = (int)(0.70f*width); viewport[1].y = (int)(0.70f*height);
-	viewport[1].w = (int)(0.30f*width); viewport[1].h = (int)(0.30*height);
-	ProjectionMatrix[1] = glm::perspective(cam[1].fov_y*TO_RADIAN, cam[1].aspect_ratio, cam[1].near_clip, cam[1].far_clip);
-	ViewProjectionMatrix[1] = ProjectionMatrix[1] * ViewMatrix[1];
+	cam[TOP_VIEW].aspect_ratio = (float)width / height;
+	viewport[TOP_VIEW].x = 0.0f;
+	viewport[TOP_VIEW].y = 500.0f;
+	viewport[TOP_VIEW].w = (int)(0.30f*width);
+	viewport[TOP_VIEW].h = (int)(0.30f*height);
+	ProjectionMatrix[TOP_VIEW] = glm::perspective(cam[TOP_VIEW].fov_y, cam[TOP_VIEW].aspect_ratio, cam[TOP_VIEW].near_clip, cam[TOP_VIEW].far_clip);
+	ViewProjectionMatrix[TOP_VIEW] = ProjectionMatrix[TOP_VIEW] * ViewMatrix[TOP_VIEW];
+
+	cam[FRONT_VIEW].aspect_ratio = cam[TOP_VIEW].aspect_ratio; 
+	viewport[FRONT_VIEW].x = (int)(0.3f*width);
+	viewport[FRONT_VIEW].y = (int)(0.70f*height);
+	viewport[FRONT_VIEW].w = (int)(0.30f*width);
+	viewport[FRONT_VIEW].h = (int)(0.30*height);
+	ProjectionMatrix[FRONT_VIEW] = glm::perspective(cam[FRONT_VIEW].fov_y, cam[FRONT_VIEW].aspect_ratio, cam[FRONT_VIEW].near_clip, cam[FRONT_VIEW].far_clip);
+	ViewProjectionMatrix[FRONT_VIEW] = ProjectionMatrix[FRONT_VIEW] * ViewMatrix[FRONT_VIEW];
+
+
+	cam[SIDE_VIEW].aspect_ratio = cam[FRONT_VIEW].aspect_ratio; 
+	viewport[SIDE_VIEW].x = (int)(0.30f*width);
+	viewport[SIDE_VIEW].y = (int)(0.50f*height);
+	viewport[SIDE_VIEW].w = (int)(0.30f*width);
+	viewport[SIDE_VIEW].h = (int)(0.30f*height);
+	ProjectionMatrix[SIDE_VIEW] = glm::perspective(cam[SIDE_VIEW].fov_y, cam[SIDE_VIEW].aspect_ratio, cam[SIDE_VIEW].near_clip, cam[SIDE_VIEW].far_clip);
+	ViewProjectionMatrix[SIDE_VIEW] = ProjectionMatrix[SIDE_VIEW] * ViewMatrix[SIDE_VIEW];
 
 	glutPostRedisplay();
 }
@@ -185,19 +215,45 @@ void prepare_shader_program(void) {
 	loc_primitive_color = glGetUniformLocation(h_ShaderProgram, "u_primitive_color");
 }
 void initialize_camera() {
-	//cam 1
-	cam[0].pos = glm::vec3(120.0f, 90.0f, 1000.0f);
-	cam[0].uaxis = glm::vec3(120.0f, 90.0f, 1000.0f);
-	cam[0].vaxis = glm::vec3(120.0f, 90.0f, 1000.0f);
-	cam[0].naxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+	//TOP_VIEW
+	cam[TOP_VIEW].pos = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[TOP_VIEW].uaxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[TOP_VIEW].vaxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[TOP_VIEW].naxis = glm::vec3(120.0f, 90.0f, 1000.0f);
 
-	cam[0].move_status = 0;
-	cam[0].fov_y = 15.0f;
-	cam[0].aspect_ratio = 1.0f;
-	cam[0].near_clip = 1.0f;
-	cam[0].far_clip = 10000.0f;
+	cam[TOP_VIEW].move_status = 0;
+	cam[TOP_VIEW].fov_y = 15.0f*TO_RADIAN;
+	cam[TOP_VIEW].aspect_ratio = 1.0f;
+	cam[TOP_VIEW].near_clip = 1.0f;	
+	cam[TOP_VIEW].far_clip = 10000.0f;
 
-	//set_ViewMatrix(0);
+	//FRONT_VIEW
+	cam[FRONT_VIEW].pos = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[FRONT_VIEW].uaxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[FRONT_VIEW].vaxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[FRONT_VIEW].naxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+
+	cam[FRONT_VIEW].move_status = 0;
+	cam[FRONT_VIEW].fov_y = 15.0f*TO_RADIAN;
+	//cam[FRONT_VIEW].aspect_ratio = 1.0f;
+	cam[FRONT_VIEW].near_clip = 1.0f;
+	cam[FRONT_VIEW].far_clip = 10000.0f;
+
+	//SIDE_VIEW
+	cam[SIDE_VIEW].pos = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[SIDE_VIEW].uaxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[SIDE_VIEW].vaxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+	cam[SIDE_VIEW].naxis = glm::vec3(120.0f, 90.0f, 1000.0f);
+
+	cam[SIDE_VIEW].move_status = 0;
+	cam[SIDE_VIEW].fov_y = 15.0f*TO_RADIAN;
+	//cam[SIDE_VIEW].aspect_ratio = 1.0f;
+	cam[SIDE_VIEW].near_clip = 1.0f;
+	cam[SIDE_VIEW].far_clip = 10000.0f;
+
+
+//	set_ViewMatrix(0)
+
 	ViewMatrix[0] = glm::lookAt(glm::vec3(120.0f, 90.0f, 1000.0f), glm::vec3(120.0f, 90.0f, 0.0f),
 		glm::vec3(-10.0f, 0.0f, 0.0f));
 	//cam2
