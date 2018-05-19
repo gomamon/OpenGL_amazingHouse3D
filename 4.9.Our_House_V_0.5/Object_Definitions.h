@@ -312,11 +312,11 @@ void define_static_objects(void) {
 	n_static_objects = 8;
 }
 
-void draw_static_object(Object *obj_ptr, int instance_ID) {
+void draw_static_object(Object *obj_ptr, int instance_ID, int cam_idx) {
 	glFrontFace(obj_ptr->front_face_mode);
 
-	ModelViewMatrix = ViewMatrix * obj_ptr->ModelMatrix[instance_ID];
-	ModelViewProjectionMatrix = ProjectionMatrix * ModelViewMatrix;
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * obj_ptr->ModelMatrix[instance_ID];
+	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 
 	glUniform3f(loc_primitive_color, obj_ptr->material[instance_ID].diffuse.r,
@@ -353,9 +353,9 @@ void define_axes(void) {
 }
 
 #define WC_AXIS_LENGTH		60.0f
-void draw_axes(void) {
-	ModelViewMatrix = glm::scale(ViewMatrix, glm::vec3(WC_AXIS_LENGTH, WC_AXIS_LENGTH, WC_AXIS_LENGTH));
-	ModelViewProjectionMatrix = ProjectionMatrix * ModelViewMatrix;
+void draw_axes(int cam_idx) {
+	ModelViewMatrix[cam_idx] = glm::scale(ViewMatrix[cam_idx], glm::vec3(WC_AXIS_LENGTH, WC_AXIS_LENGTH, WC_AXIS_LENGTH));
+	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 
 	glBindVertexArray(VAO_axes);
@@ -395,12 +395,12 @@ void define_animated_tiger(void) {
 	}
 }
 
-void draw_animated_tiger(void) {
-	ModelViewMatrix = glm::rotate(ViewMatrix, -tiger_data.rotation_angle, glm::vec3(0.0f, 0.0f, 1.0f));
- 	ModelViewMatrix = glm::translate(ModelViewMatrix, glm::vec3(100.0f, 0.0f, 0.0f));
- 	ModelViewMatrix *= tiger[tiger_data.cur_frame].ModelMatrix[0];
+void draw_animated_tiger(int cam_idx) {
+	ModelViewMatrix[cam_idx] = glm::rotate(ViewMatrix[cam_idx], -tiger_data.rotation_angle, glm::vec3(0.0f, 0.0f, 1.0f));
+ 	ModelViewMatrix[cam_idx] = glm::translate(ModelViewMatrix[cam_idx], glm::vec3(100.0f, 0.0f, 0.0f));
+ 	ModelViewMatrix[cam_idx] *= tiger[tiger_data.cur_frame].ModelMatrix[0];
 
-	ModelViewProjectionMatrix = ProjectionMatrix * ModelViewMatrix;
+	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 
 	glUniform3f(loc_primitive_color, tiger[tiger_data.cur_frame].material[0].diffuse.r,
@@ -412,7 +412,7 @@ void draw_animated_tiger(void) {
 
 	ModelViewProjectionMatrix = glm::scale(ModelViewProjectionMatrix, glm::vec3(20.0f, 20.0f, 20.0f));
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_axes();
+	draw_axes(cam_idx);
 }
 
 void cleanup_OpenGL_stuffs(void) {
