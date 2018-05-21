@@ -396,8 +396,9 @@ void define_animated_tiger(void) {
 }
 
 void draw_animated_tiger(int cam_idx) {
+
 	ModelViewMatrix[cam_idx] = glm::rotate(ViewMatrix[cam_idx], -tiger_data.rotation_angle, glm::vec3(0.0f, 0.0f, 1.0f));
- 	ModelViewMatrix[cam_idx] = glm::translate(ModelViewMatrix[cam_idx], glm::vec3(100.0f, 0.0f, 0.0f));
+ 	ModelViewMatrix[cam_idx] = glm::translate(ModelViewMatrix[cam_idx], glm::vec3(50.0f, 0.0f, 0.0f));
  	ModelViewMatrix[cam_idx] *= tiger[tiger_data.cur_frame].ModelMatrix[0];
 
 	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
