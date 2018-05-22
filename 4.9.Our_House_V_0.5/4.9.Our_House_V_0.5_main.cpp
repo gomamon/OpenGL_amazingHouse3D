@@ -12,11 +12,12 @@ GLint loc_ModelViewProjectionMatrix, loc_primitive_color; // indices of uniform 
 //#include <glm/glm.hpp> 
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, lookAt, perspective, etc.
 
-#define CAM_NUM 8
-
+#define CAM_NUM 10
+#define CAM_TRANSLATION_SPEED 0.025f
+#define CAM_ROTATION_SPEED 0.1f
 
 enum VIEW {
-	TOP_VIEW = 0, FRONT_VIEW, SIDE_VIEW, CCTV1_VIEW, CCTV2_VIEW, CCTV3_VIEW, MAIN_VIEW
+	TOP_VIEW = 0, FRONT_VIEW, SIDE_VIEW, CCTV1_VIEW, CCTV2_VIEW, CCTV3_VIEW, MAIN_VIEW, DYNAMIC_CCTV_VIEW
 }VIEW;
 
 typedef struct _CAMERA {
@@ -27,10 +28,10 @@ typedef struct _CAMERA {
 }CAMERA;
 
 CAMERA cam[CAM_NUM];
-int cam_selected = CCTV1_VIEW;
+int cam_selected = MAIN_VIEW;
 
 
-
+int move_mode = 1; //0:translation mode 1: roatation mode
 int CCTV_selected=1;
 
 typedef struct _VIEWPORT {
@@ -65,6 +66,12 @@ void set_ViewMatrix(int cam_idx) {
 	ViewMatrix[cam_idx] = glm::translate(ViewMatrix[cam_idx], -cam[cam_idx].pos);
 }
 
+typedef struct _CALLBACK_CONTEXT {
+	int prevx, prevy, left_button_status, right_button_status;
+	float rotation_angle_cow;
+}CALLBACK_CONTEXT;
+CALLBACK_CONTEXT cc;
+
 void display_camera(int cam_idx) {
 
 	glViewport(viewport[cam_idx].x, viewport[cam_idx].y, viewport[cam_idx].w, viewport[cam_idx].h);
@@ -97,6 +104,70 @@ void display_camera(int cam_idx) {
 
 }
 
+void renew_cam_position(int cam_idx, float del, glm::vec3 trans_axis) {
+	cam[cam_idx].pos += CAM_TRANSLATION_SPEED * del * trans_axis;
+}
+
+void renew_cam_rotation(int cam_idx, float angle, glm::vec3 rot_axis) {
+	
+	glm::mat3 RotationMatrix;
+
+	RotationMatrix = glm::mat3(glm::rotate(glm::mat4(1.0f), CAM_ROTATION_SPEED*TO_RADIAN*angle, rot_axis));
+
+	cam[cam_idx].uaxis = RotationMatrix * cam[cam_idx].uaxis;
+	cam[cam_idx].vaxis = RotationMatrix * cam[cam_idx].vaxis;
+	cam[cam_idx].naxis = RotationMatrix * cam[cam_idx].naxis;
+
+}
+
+void motion(int x, int y) {
+
+	if (!cam[cam_selected].move_status) return;
+	float dx = (float)(x - cc.prevx);
+	float dy = (float)(cc.prevy - y);
+	cc.prevx = x; cc.prevy = y;
+
+	if (cam_selected == MAIN_VIEW) {
+		switch (move_mode) {
+			case 0: //rotation mode
+				if (cc.left_button_status == GLUT_DOWN) {
+					renew_cam_rotation(cam_selected, -dy, -cam[cam_selected].uaxis);
+					renew_cam_rotation(cam_selected, dx, -cam[cam_selected].vaxis);
+				}
+				else if(cc.right_button_status == GLUT_DOWN) {
+					renew_cam_rotation(cam_selected, 2*dx, -cam[cam_selected].naxis);
+				}
+				break;
+			case 1:	//trainslation mode
+				if (cc.left_button_status == GLUT_DOWN) {
+					renew_cam_position(cam_selected, -dx*10, cam[cam_selected].uaxis);
+					renew_cam_position(cam_selected, -dy*10, cam[cam_selected].vaxis);
+				}
+				else if (cc.right_button_status == GLUT_DOWN) {
+					renew_cam_position(cam_selected, -dy*10 , cam[cam_selected].naxis);
+				}
+				break;
+		}
+		
+	}
+
+	if (cam_selected == DYNAMIC_CCTV_VIEW) {
+		if (cc.left_button_status == GLUT_DOWN) {
+			renew_cam_rotation(cam_selected, -dy, -cam[cam_selected].uaxis);
+			renew_cam_rotation(cam_selected, dx, -cam[cam_selected].vaxis);
+		}
+		if (cc.right_button_status == GLUT_DOWN) {
+			renew_cam_rotation(cam_selected, 2 * dx, -cam[cam_selected].naxis);
+		}
+
+	}
+	set_ViewMatrix(cam_selected);
+	ViewProjectionMatrix[cam_selected] = ProjectionMatrix[cam_selected] * ViewMatrix[cam_selected];
+	
+
+	glutPostRedisplay();
+
+}
 
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -114,12 +185,15 @@ void display(void) {
 			display_camera(CCTV3_VIEW);
 			break;
 	}
-	display_camera(MAIN_VIEW);
+
+	display_camera(cam_selected);
 	glutSwapBuffers();
 }
 
+
 void keyboard(unsigned char key, int x, int y) {
 	static int flag_cull_face = 0, polygon_fill_on = 0, depth_test_on = 0;
+	static int main_view_mode = 1;
 
 	switch (key) {
 	case 27: // ESC key
@@ -173,34 +247,85 @@ void keyboard(unsigned char key, int x, int y) {
 		glutPostRedisplay();
 		break;
 	case '1':
-		cam_selected = CCTV1_VIEW;
 		CCTV_selected = 1;
 		break;
 	case '2':
-		cam_selected = CCTV2_VIEW;
 		CCTV_selected = 2;
 		break;
 	case '3':
-		cam_selected = CCTV3_VIEW;
 		CCTV_selected = 3;
 		break;
-
-	}
-}
-void mouse(int button, int state, int x, int y) {
-	if (button == 3 || button == 4) {
-		if (state == GLUT_DOWN) {
-			cam_selected = CCTV3_VIEW;
-			CCTV_selected = 3;
+	case 'm':
+		if (main_view_mode == 0) {
+			cam_selected = MAIN_VIEW;
+			main_view_mode = 1;
 		}
-	
+		else {
+			cam_selected = DYNAMIC_CCTV_VIEW;
+			main_view_mode = 0;
+		}
+		break;
+	case't':
+		move_mode++;
+		move_mode %= 2;
+		break;
 	}
 }
+void mousepress(int button, int state, int x, int y) {
+	//mouse click and move
+	if(button == GLUT_LEFT_BUTTON) {
+		if (state == GLUT_DOWN) {
+			cc.left_button_status = GLUT_DOWN;
+			cam[cam_selected].move_status = 1;
+			cc.prevx = x; cc.prevy = y;
+		}
+		else if (state == GLUT_UP) {
+			cc.left_button_status = GLUT_UP;
+			cam[cam_selected].move_status = 0;
+		}
+	}
+	if( button == GLUT_RIGHT_BUTTON ) {
+		if (state == GLUT_DOWN) {
+			cc.right_button_status = GLUT_DOWN;
+			cam[cam_selected].move_status = 1;
+			cc.prevx = x; cc.prevy = y;
+		}
+		else if (state == GLUT_UP) {
+			cc.right_button_status = GLUT_UP;
+			cam[cam_selected].move_status = 0;
+		}
+	}
 
-void motion(int x, int y) {
-
-
+	
+	
 }
+
+void mouseWheel(int button, int dir, int x, int y)
+{
+	if (dir < 0) {
+		if (cam[cam_selected].fov_y > 5*TO_RADIAN ){
+			cam[cam_selected].fov_y += dir * 0.01;
+			ProjectionMatrix[cam_selected] = glm::perspective(cam[cam_selected].fov_y, cam[cam_selected].aspect_ratio, cam[cam_selected].near_clip, cam[cam_selected].far_clip);
+			ViewProjectionMatrix[cam_selected] = ProjectionMatrix[cam_selected] * ViewMatrix[cam_selected];
+
+			glutPostRedisplay();
+		}
+	}
+	if (dir > 0 ){ 
+		if (cam[cam_selected].fov_y < 100*TO_RADIAN ) {
+			cam[cam_selected].fov_y += dir * 0.01;	
+			ProjectionMatrix[cam_selected] = glm::perspective(cam[cam_selected].fov_y, cam[cam_selected].aspect_ratio, cam[cam_selected].near_clip, cam[cam_selected].far_clip);
+			ViewProjectionMatrix[cam_selected] = ProjectionMatrix[cam_selected] * ViewMatrix[cam_selected];
+
+			glutPostRedisplay();
+		}
+	}
+
+	
+	return;
+}
+
+
 
 void reshape(int width, int height) {
 
@@ -240,13 +365,24 @@ void reshape(int width, int height) {
 		ViewProjectionMatrix[cctv] = ProjectionMatrix[cctv] * ViewMatrix[cctv];
 	}
 
-	cam[MAIN_VIEW].aspect_ratio = cam[FRONT_VIEW].aspect_ratio;
-	viewport[MAIN_VIEW].x = (int)(0.1f*width);
-	viewport[MAIN_VIEW].y = (int)(0.0f*height);
-	viewport[MAIN_VIEW].w = (int)(0.80f*width);
-	viewport[MAIN_VIEW].h = (int)(0.80f*height);
+	viewport[MAIN_VIEW].x = (int)(0.05f*width);
+	viewport[MAIN_VIEW].y = (int)(0.05f*height);
+	viewport[MAIN_VIEW].w = (int)(0.9f*width);
+	viewport[MAIN_VIEW].h = (int)(0.6f*height);
+	cam[MAIN_VIEW].aspect_ratio = viewport[MAIN_VIEW].w / viewport[MAIN_VIEW].h;
 	ProjectionMatrix[MAIN_VIEW] = glm::perspective(cam[MAIN_VIEW].fov_y, cam[MAIN_VIEW].aspect_ratio, cam[MAIN_VIEW].near_clip, cam[MAIN_VIEW].far_clip);
 	ViewProjectionMatrix[MAIN_VIEW] = ProjectionMatrix[MAIN_VIEW] * ViewMatrix[MAIN_VIEW];
+
+
+	viewport[DYNAMIC_CCTV_VIEW].x = (int)(0.05f*width);
+	viewport[DYNAMIC_CCTV_VIEW].y = (int)(0.05f*height);
+	viewport[DYNAMIC_CCTV_VIEW].w = (int)(0.9f*width);
+	viewport[DYNAMIC_CCTV_VIEW].h = (int)(0.6f*height);
+	cam[DYNAMIC_CCTV_VIEW].aspect_ratio = viewport[DYNAMIC_CCTV_VIEW].w / viewport[DYNAMIC_CCTV_VIEW].h;
+	ProjectionMatrix[DYNAMIC_CCTV_VIEW] = glm::perspective(cam[DYNAMIC_CCTV_VIEW].fov_y, cam[DYNAMIC_CCTV_VIEW].aspect_ratio, cam[DYNAMIC_CCTV_VIEW].near_clip, cam[DYNAMIC_CCTV_VIEW].far_clip);
+	ViewProjectionMatrix[DYNAMIC_CCTV_VIEW] = ProjectionMatrix[DYNAMIC_CCTV_VIEW] * ViewMatrix[DYNAMIC_CCTV_VIEW];
+
+
 
 	glutPostRedisplay();
 }
@@ -261,7 +397,9 @@ void timer_scene(int timestamp_scene) {
 void register_callbacks(void) {
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
-	glutMouseFunc(mouse);
+	glutMouseFunc(mousepress);
+	glutMouseWheelFunc(mouseWheel);
+	glutMotionFunc(motion);
 	glutReshapeFunc(reshape);
 	glutTimerFunc(100, timer_scene, 0);
 	glutCloseFunc(cleanup_OpenGL_stuffs);
@@ -334,7 +472,7 @@ void initialize_camera() {
 	cam[CCTV1_VIEW].naxis = glm::vec3(0.5f, 0.5f, 0.0f);
 	cam[CCTV1_VIEW].vaxis = glm::cross(glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
 
-	cam[CCTV1_VIEW].move_status = 1;
+	cam[CCTV1_VIEW].move_status = 0;
 	cam[CCTV1_VIEW].fov_y = 50.0f*TO_RADIAN;
 	//cam[SIDE_VIEW].aspect_ratio = 1.0f;
 	cam[CCTV1_VIEW].near_clip = 1.0f;
@@ -347,7 +485,7 @@ void initialize_camera() {
 	cam[CCTV2_VIEW].vaxis = glm::vec3(0.0f, 0.0f, 1.0f);
 	cam[CCTV2_VIEW].naxis = glm::vec3(-1.0f, 0.0f, 0.0f);
 
-	cam[CCTV2_VIEW].move_status = 1;
+	cam[CCTV2_VIEW].move_status = 0;
 	cam[CCTV2_VIEW].fov_y = 50.0f*TO_RADIAN;
 	cam[CCTV2_VIEW].near_clip = 1.0f;
 	cam[CCTV2_VIEW].far_clip = 10000.0f;
@@ -360,7 +498,7 @@ void initialize_camera() {
 	cam[CCTV3_VIEW].vaxis = glm::vec3(0.0f, 0.0f, 1.0f);
 	cam[CCTV3_VIEW].naxis = glm::vec3(0.0f, -1.0f, 0.0f);
 
-	cam[CCTV3_VIEW].move_status = 1;
+	cam[CCTV3_VIEW].move_status = 0;
 	cam[CCTV3_VIEW].fov_y = 50.0f*TO_RADIAN;
 	cam[CCTV3_VIEW].near_clip = 1.0f;
 	cam[CCTV3_VIEW].far_clip = 10000.0f;
@@ -373,11 +511,26 @@ void initialize_camera() {
 	cam[MAIN_VIEW].vaxis = glm::cross(cam[MAIN_VIEW].uaxis,-cam[MAIN_VIEW].naxis);
 	
 
-	cam[MAIN_VIEW].move_status = 1;
+	cam[MAIN_VIEW].move_status = 0;
 	cam[MAIN_VIEW].fov_y = 14.0f*TO_RADIAN;
 	cam[MAIN_VIEW].near_clip = 1.0f;
 	cam[MAIN_VIEW].far_clip = 10000.0f;
 	set_ViewMatrix(MAIN_VIEW);
+
+	cam[DYNAMIC_CCTV_VIEW].pos = glm::vec3(200.0f, 40.0f, 50.0f);
+	cam[DYNAMIC_CCTV_VIEW].naxis = glm::normalize(glm::vec3(200.0f - 200.0f, 40.0f - 135.0f, 50.0f - 25.0f));
+	cam[DYNAMIC_CCTV_VIEW].uaxis = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), cam[DYNAMIC_CCTV_VIEW].naxis);
+	cam[DYNAMIC_CCTV_VIEW].vaxis = glm::cross(cam[DYNAMIC_CCTV_VIEW].uaxis, -cam[DYNAMIC_CCTV_VIEW].naxis);
+
+
+	cam[DYNAMIC_CCTV_VIEW].move_status = 0;
+	cam[DYNAMIC_CCTV_VIEW].fov_y = 80.0f*TO_RADIAN;
+	cam[DYNAMIC_CCTV_VIEW].near_clip = 1.0f;
+	cam[DYNAMIC_CCTV_VIEW].far_clip = 10000.0f;
+
+	cc.left_button_status = GLUT_UP;
+	cc.left_button_status = GLUT_UP;
+	set_ViewMatrix(DYNAMIC_CCTV_VIEW);
 }
 
 
