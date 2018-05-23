@@ -27,18 +27,53 @@ typedef struct _Object {
 	Material material[N_MAX_GEOM_COPIES];
 } Object;
 
-#define N_MAX_STATIC_OBJECTS		10
+#define N_MAX_STATIC_OBJECTS		13
 Object static_objects[N_MAX_STATIC_OBJECTS]; // allocage memory dynamically every time it is needed rather than using a static array
 int n_static_objects = 0;
 
 #define OBJ_BUILDING		0
-#define OBJ_TABLE			1
-#define OBJ_LIGHT			2
-#define OBJ_TEAPOT			3
-#define OBJ_NEW_CHAIR		4
-#define OBJ_FRAME			5
-#define OBJ_NEW_PICTURE		6
-#define OBJ_COW				7
+#define OBJ_MINIBUILDING		1
+#define OBJ_TABLE			2
+#define OBJ_LIGHT			3
+#define OBJ_TEAPOT1			4
+#define OBJ_TEAPOT2			5
+#define OBJ_NEW_CHAIR1		6
+#define OBJ_NEW_CHAIR2		7
+#define OBJ_FRAME			8
+#define OBJ_NEW_PICTURE		9
+#define OBJ_COW1			10
+#define OBJ_COW2			11
+
+GLfloat cctv_body[1][3] = { {0.0, 0.0, 0.0} };
+GLfloat main_color[1][3] = { { 100 / 255.0f, 255 / 255.0f, 100 / 255.0f } };
+GLfloat cctv_color[1][3] = { { 0 / 255.0f, 149 / 255.0f, 159 / 255.0f } };
+GLuint VBO_cctv, VAO_cctv;
+GLsizeiptr buffer_size = sizeof(cctv_body);
+
+void prepare_cctv() {
+	GLsizeiptr buffer_size = sizeof(cctv_body);
+
+	// Initialize vertex buffer object.
+	glGenBuffers(1, &VBO_cctv);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_cctv);
+	glBufferData(GL_ARRAY_BUFFER, buffer_size, NULL, GL_STATIC_DRAW); // allocate buffer object memory
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(cctv_body), cctv_body);
+
+	// Initialize vertex array object.
+	glGenVertexArrays(1, &VAO_cctv);
+	glBindVertexArray(VAO_cctv);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_cctv);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
+
 
 int read_geometry(GLfloat **object, int bytes_per_primitive, char *filename) {
 	int n_triangles;
@@ -98,6 +133,7 @@ void prepare_geom_of_static_object(Object *obj_ptr) {
 }
 
 void define_static_objects(void) {
+	
 	// building
 	strcpy(static_objects[OBJ_BUILDING].filename, "Data/Building1_vnt.geom");
 	static_objects[OBJ_BUILDING].n_fields = 8;
@@ -114,6 +150,26 @@ void define_static_objects(void) {
 	static_objects[OBJ_BUILDING].material[0].diffuse = glm::vec4(0.54f, 0.89f, 0.63f, 1.0f);
 	static_objects[OBJ_BUILDING].material[0].specular = glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
 	static_objects[OBJ_BUILDING].material[0].exponent = 128.0f*0.1f;
+
+	// building
+	strcpy(static_objects[OBJ_MINIBUILDING].filename, "Data/Building1_vnt.geom");
+	static_objects[OBJ_MINIBUILDING].n_fields = 8;
+
+	static_objects[OBJ_MINIBUILDING].front_face_mode = GL_CCW;
+	prepare_geom_of_static_object(&(static_objects[OBJ_MINIBUILDING]));
+
+	static_objects[OBJ_MINIBUILDING].n_geom_instances = 1;
+
+	static_objects[OBJ_MINIBUILDING].ModelMatrix[0] = glm::mat4(1.0f);
+
+	static_objects[OBJ_MINIBUILDING].ModelMatrix[0] = glm::translate(static_objects[OBJ_MINIBUILDING].ModelMatrix[0], glm::vec3(18.0f, 30.0f, 0.0f));
+	static_objects[OBJ_MINIBUILDING].ModelMatrix[0] = glm::scale(static_objects[OBJ_MINIBUILDING].ModelMatrix[0], glm::vec3(0.15f, 0.15f, 0.15f));
+
+	static_objects[OBJ_MINIBUILDING].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	static_objects[OBJ_MINIBUILDING].material[0].ambient = glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
+	static_objects[OBJ_MINIBUILDING].material[0].diffuse = glm::vec4(0.54f, 0.89f, 0.63f, 1.0f);
+	static_objects[OBJ_MINIBUILDING].material[0].specular = glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
+	static_objects[OBJ_MINIBUILDING].material[0].exponent = 128.0f*0.1f;
 
 	// table
 	strcpy(static_objects[OBJ_TABLE].filename, "Data/Table_vn.geom");
@@ -203,45 +259,88 @@ void define_static_objects(void) {
 	static_objects[OBJ_LIGHT].material[4].specular = glm::vec4(0.628281f, 0.555802f, 0.366065f, 1.0f);
 	static_objects[OBJ_LIGHT].material[4].exponent = 128.0f*0.4f;
 
-	// teapot
-	strcpy(static_objects[OBJ_TEAPOT].filename, "Data/Teapotn_vn.geom");
-	static_objects[OBJ_TEAPOT].n_fields = 6;
+	// teapot1
+	strcpy(static_objects[OBJ_TEAPOT1].filename, "Data/Teapotn_vn.geom");
+	static_objects[OBJ_TEAPOT1].n_fields = 6;
 
-	static_objects[OBJ_TEAPOT].front_face_mode = GL_CCW;
-	prepare_geom_of_static_object(&(static_objects[OBJ_TEAPOT]));
+	static_objects[OBJ_TEAPOT1].front_face_mode = GL_CCW;
+	prepare_geom_of_static_object(&(static_objects[OBJ_TEAPOT1]));
 
-	static_objects[OBJ_TEAPOT].n_geom_instances = 1;
+	static_objects[OBJ_TEAPOT1].n_geom_instances = 1;
 
-	static_objects[OBJ_TEAPOT].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(193.0f, 120.0f, 11.0f));
-	static_objects[OBJ_TEAPOT].ModelMatrix[0] = glm::scale(static_objects[OBJ_TEAPOT].ModelMatrix[0],
+	static_objects[OBJ_TEAPOT1].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(193.0f, 120.0f, 11.0f));
+	static_objects[OBJ_TEAPOT1].ModelMatrix[0] = glm::scale(static_objects[OBJ_TEAPOT1].ModelMatrix[0],
 		glm::vec3(2.0f, 2.0f, 2.0f));
 
-	static_objects[OBJ_TEAPOT].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	static_objects[OBJ_TEAPOT].material[0].ambient = glm::vec4(0.1745f, 0.01175f, 0.01175f, 1.0f);
-	static_objects[OBJ_TEAPOT].material[0].diffuse = glm::vec4(0.61424f, 0.04136f, 0.04136f, 1.0f);
-	static_objects[OBJ_TEAPOT].material[0].specular = glm::vec4(0.727811f, 0.626959f, 0.626959f, 1.0f);
-	static_objects[OBJ_TEAPOT].material[0].exponent = 128.0f*0.6;
+	static_objects[OBJ_TEAPOT1].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	static_objects[OBJ_TEAPOT1].material[0].ambient = glm::vec4(0.1745f, 0.01175f, 0.01175f, 1.0f);
+	static_objects[OBJ_TEAPOT1].material[0].diffuse = glm::vec4(0.61424f, 0.04136f, 0.04136f, 1.0f);
+	static_objects[OBJ_TEAPOT1].material[0].specular = glm::vec4(0.727811f, 0.626959f, 0.626959f, 1.0f);
+	static_objects[OBJ_TEAPOT1].material[0].exponent = 128.0f*0.6;
 
-	// new_chair
-	strcpy(static_objects[OBJ_NEW_CHAIR].filename, "Data/new_chair_vnt.geom");
-	static_objects[OBJ_NEW_CHAIR].n_fields = 8;
+	// teapot2
+	strcpy(static_objects[OBJ_TEAPOT2].filename, "Data/Teapotn_vn.geom");
+	static_objects[OBJ_TEAPOT2].n_fields = 6;
 
-	static_objects[OBJ_NEW_CHAIR].front_face_mode = GL_CCW;
-	prepare_geom_of_static_object(&(static_objects[OBJ_NEW_CHAIR]));
+	static_objects[OBJ_TEAPOT2].front_face_mode = GL_CCW;
+	prepare_geom_of_static_object(&(static_objects[OBJ_TEAPOT2]));
 
-	static_objects[OBJ_NEW_CHAIR].n_geom_instances = 1;
+	static_objects[OBJ_TEAPOT2].n_geom_instances = 1;
 
-	static_objects[OBJ_NEW_CHAIR].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(200.0f, 104.0f, 0.0f));
-	static_objects[OBJ_NEW_CHAIR].ModelMatrix[0] = glm::scale(static_objects[OBJ_NEW_CHAIR].ModelMatrix[0],
+	static_objects[OBJ_TEAPOT2].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(130.0f, 140.0f, 1.0f));
+	static_objects[OBJ_TEAPOT2].ModelMatrix[0] = glm::scale(static_objects[OBJ_TEAPOT2].ModelMatrix[0],
+		glm::vec3(3.0f, 3.0f, 3.0f));
+	static_objects[OBJ_TEAPOT2].ModelMatrix[0] = glm::rotate(static_objects[OBJ_TEAPOT2].ModelMatrix[0], 90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	static_objects[OBJ_TEAPOT2].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	static_objects[OBJ_TEAPOT2].material[0].ambient = glm::vec4(0.1745f, 0.01175f, 0.01175f, 1.0f);
+	static_objects[OBJ_TEAPOT2].material[0].diffuse = glm::vec4(0.61424f, 0.04136f, 0.04136f, 1.0f);
+	static_objects[OBJ_TEAPOT2].material[0].specular = glm::vec4(0.727811f, 0.626959f, 0.626959f, 1.0f);
+	static_objects[OBJ_TEAPOT2].material[0].exponent = 128.0f*0.6;
+
+	// new_chair1
+	strcpy(static_objects[OBJ_NEW_CHAIR1].filename, "Data/new_chair_vnt.geom");
+	static_objects[OBJ_NEW_CHAIR1].n_fields = 8;
+
+	static_objects[OBJ_NEW_CHAIR1].front_face_mode = GL_CCW;
+	prepare_geom_of_static_object(&(static_objects[OBJ_NEW_CHAIR1]));
+
+	static_objects[OBJ_NEW_CHAIR1].n_geom_instances = 1;
+
+	static_objects[OBJ_NEW_CHAIR1].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(200.0f, 104.0f, 0.0f));
+	static_objects[OBJ_NEW_CHAIR1].ModelMatrix[0] = glm::scale(static_objects[OBJ_NEW_CHAIR1].ModelMatrix[0],
 		glm::vec3(0.8f, 0.8f, 0.8f));
-	static_objects[OBJ_NEW_CHAIR].ModelMatrix[0] = glm::rotate(static_objects[OBJ_NEW_CHAIR].ModelMatrix[0],
+	static_objects[OBJ_NEW_CHAIR1].ModelMatrix[0] = glm::rotate(static_objects[OBJ_NEW_CHAIR1].ModelMatrix[0],
 		180.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 
-	static_objects[OBJ_NEW_CHAIR].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	static_objects[OBJ_NEW_CHAIR].material[0].ambient = glm::vec4(0.05f, 0.05f, 0.0f, 1.0f);
-	static_objects[OBJ_NEW_CHAIR].material[0].diffuse = glm::vec4(0.5f, 0.5f, 0.4f, 1.0f);
-	static_objects[OBJ_NEW_CHAIR].material[0].specular = glm::vec4(0.7f, 0.7f, 0.04f, 1.0f);
-	static_objects[OBJ_NEW_CHAIR].material[0].exponent = 128.0f*0.078125f;
+	static_objects[OBJ_NEW_CHAIR1].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	static_objects[OBJ_NEW_CHAIR1].material[0].ambient = glm::vec4(0.05f, 0.05f, 0.0f, 1.0f);
+	static_objects[OBJ_NEW_CHAIR1].material[0].diffuse = glm::vec4(0.5f, 0.5f, 0.4f, 1.0f);
+	static_objects[OBJ_NEW_CHAIR1].material[0].specular = glm::vec4(0.7f, 0.7f, 0.04f, 1.0f);
+	static_objects[OBJ_NEW_CHAIR1].material[0].exponent = 128.0f*0.078125f;
+
+	// new_chair2
+	strcpy(static_objects[OBJ_NEW_CHAIR2].filename, "Data/new_chair_vnt.geom");
+	static_objects[OBJ_NEW_CHAIR2].n_fields = 8;
+
+	static_objects[OBJ_NEW_CHAIR2].front_face_mode = GL_CCW;
+	prepare_geom_of_static_object(&(static_objects[OBJ_NEW_CHAIR2]));
+
+	static_objects[OBJ_NEW_CHAIR2].n_geom_instances = 1;
+
+	static_objects[OBJ_NEW_CHAIR2].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(120.0f, 90.0f, 0.0f));
+	static_objects[OBJ_NEW_CHAIR2].ModelMatrix[0] = glm::rotate(static_objects[OBJ_NEW_CHAIR2].ModelMatrix[0], 90*TO_RADIAN,glm::vec3(1.0f,0.0f, 0.0f));
+	static_objects[OBJ_NEW_CHAIR2].ModelMatrix[0] = glm::scale(static_objects[OBJ_NEW_CHAIR2].ModelMatrix[0],
+		glm::vec3(0.8f, 0.8f, 0.8f));
+	static_objects[OBJ_NEW_CHAIR2].ModelMatrix[0] = glm::rotate(static_objects[OBJ_NEW_CHAIR2].ModelMatrix[0],
+		180.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	static_objects[OBJ_NEW_CHAIR2].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	static_objects[OBJ_NEW_CHAIR2].material[0].ambient = glm::vec4(0.05f, 0.05f, 0.0f, 1.0f);
+	static_objects[OBJ_NEW_CHAIR2].material[0].diffuse = glm::vec4(0.5f, 0.5f, 0.4f, 1.0f);
+	static_objects[OBJ_NEW_CHAIR2].material[0].specular = glm::vec4(0.7f, 0.7f, 0.04f, 1.0f);
+	static_objects[OBJ_NEW_CHAIR2].material[0].exponent = 128.0f*0.078125f;
+
 
 	// frame
 	strcpy(static_objects[OBJ_FRAME].filename, "Data/Frame_vn.geom");
@@ -287,29 +386,50 @@ void define_static_objects(void) {
 	static_objects[OBJ_NEW_PICTURE].material[0].exponent = 128.0f*0.6f;
 
 	// new_picture
-	strcpy(static_objects[OBJ_COW].filename, "Data/cow_vn.geom");
-	static_objects[OBJ_COW].n_fields = 6;
+	strcpy(static_objects[OBJ_COW1].filename, "Data/cow_vn.geom");
+	static_objects[OBJ_COW1].n_fields = 6;
 
-	static_objects[OBJ_COW].front_face_mode = GL_CCW;
-	prepare_geom_of_static_object(&(static_objects[OBJ_COW]));
+	static_objects[OBJ_COW1].front_face_mode = GL_CCW;
+	prepare_geom_of_static_object(&(static_objects[OBJ_COW1]));
 
-	static_objects[OBJ_COW].n_geom_instances = 1;
+	static_objects[OBJ_COW1].n_geom_instances = 1;
 
-	static_objects[OBJ_COW].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(215.0f, 100.0f, 9.5f));
-	static_objects[OBJ_COW].ModelMatrix[0] = glm::scale(static_objects[OBJ_COW].ModelMatrix[0],
+	static_objects[OBJ_COW1].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(215.0f, 100.0f, 9.5f));
+	static_objects[OBJ_COW1].ModelMatrix[0] = glm::scale(static_objects[OBJ_COW1].ModelMatrix[0],
 		glm::vec3(30.0f, 30.0f, 30.0f));
-	static_objects[OBJ_COW].ModelMatrix[0] = glm::rotate(static_objects[OBJ_COW].ModelMatrix[0],
+	static_objects[OBJ_COW1].ModelMatrix[0] = glm::rotate(static_objects[OBJ_COW1].ModelMatrix[0],
 		90.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	static_objects[OBJ_COW].ModelMatrix[0] = glm::rotate(static_objects[OBJ_COW].ModelMatrix[0],
+	static_objects[OBJ_COW1].ModelMatrix[0] = glm::rotate(static_objects[OBJ_COW1].ModelMatrix[0],
 		90.0f*TO_RADIAN, glm::vec3(1.0f, 0.0f, 0.0f));
  
-	static_objects[OBJ_COW].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	static_objects[OBJ_COW].material[0].ambient = glm::vec4(0.329412f, 0.223529f, 0.027451f, 1.0f);
-	static_objects[OBJ_COW].material[0].diffuse = glm::vec4(0.780392f, 0.568627f, 0.113725f, 1.0f);
-	static_objects[OBJ_COW].material[0].specular = glm::vec4(0.992157f, 0.941176f, 0.807843f, 1.0f);
-	static_objects[OBJ_COW].material[0].exponent = 0.21794872f*0.6f;
+	static_objects[OBJ_COW1].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	static_objects[OBJ_COW1].material[0].ambient = glm::vec4(0.329412f, 0.223529f, 0.027451f, 1.0f);
+	static_objects[OBJ_COW1].material[0].diffuse = glm::vec4(0.780392f, 0.568627f, 0.113725f, 1.0f);
+	static_objects[OBJ_COW1].material[0].specular = glm::vec4(0.992157f, 0.941176f, 0.807843f, 1.0f);
+	static_objects[OBJ_COW1].material[0].exponent = 0.21794872f*0.6f;
 
-	n_static_objects = 8;
+	// new_picture
+	strcpy(static_objects[OBJ_COW2].filename, "Data/cow_vn.geom");
+	static_objects[OBJ_COW2].n_fields = 6;
+
+	static_objects[OBJ_COW2].front_face_mode = GL_CCW;
+	prepare_geom_of_static_object(&(static_objects[OBJ_COW2]));
+
+	static_objects[OBJ_COW2].n_geom_instances = 1;
+
+	static_objects[OBJ_COW2].ModelMatrix[0] = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 140.0f, 11.0f));
+	static_objects[OBJ_COW2].ModelMatrix[0] = glm::scale(static_objects[OBJ_COW2].ModelMatrix[0],
+		glm::vec3(50.0f, 50.0f, 50.0f));
+	static_objects[OBJ_COW2].ModelMatrix[0] = glm::rotate(static_objects[OBJ_COW2].ModelMatrix[0],
+		90.0f*TO_RADIAN, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	static_objects[OBJ_COW2].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	static_objects[OBJ_COW2].material[0].ambient = glm::vec4(0.329412f, 0.223529f, 0.027451f, 1.0f);
+	static_objects[OBJ_COW2].material[0].diffuse = glm::vec4(0.780392f, 0.568627f, 0.113725f, 1.0f);
+	static_objects[OBJ_COW2].material[0].specular = glm::vec4(0.992157f, 0.941176f, 0.807843f, 1.0f);
+	static_objects[OBJ_COW2].material[0].exponent = 0.21794872f*0.6f;
+
+	n_static_objects = 11;
 }
 
 void draw_static_object(Object *obj_ptr, int instance_ID, int cam_idx) {
@@ -367,6 +487,51 @@ void draw_axes(int cam_idx) {
 	glDrawArrays(GL_LINES, 4, 2);
 	glBindVertexArray(0);
 }
+void draw_cctv() {
+	glPointSize(10.0f);
+	glEnable(GL_POINT_SMOOTH);
+	
+	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	glBindVertexArray(VAO_cctv);
+	glUniform3fv(loc_primitive_color, 1, cctv_color[0]);
+	glDrawArrays(GL_POINTS, 0, 1);
+
+	glBindVertexArray(0);
+}
+void display_cctv(int cam_idx) {
+	glm::mat4 ModelMatrix_cctv;
+	ModelMatrix_cctv = glm::translate(glm::mat4(1.0f), glm::vec3(cam[CCTV1_VIEW].pos));
+	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_cctv;
+	
+	draw_cctv();
+
+
+	ModelMatrix_cctv = glm::translate(glm::mat4(1.0f), glm::vec3(cam[CCTV2_VIEW].pos));
+	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_cctv;
+
+	draw_cctv();
+
+	ModelMatrix_cctv = glm::translate(glm::mat4(1.0f), glm::vec3(cam[CCTV3_VIEW].pos));
+	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_cctv;
+
+	draw_cctv();
+}
+void draw_main_cam(int cam_idx) {
+	glm::mat4 ModelMatrix_main;
+	ModelMatrix_main = glm::translate(glm::mat4(1.0f), glm::vec3(cam[MAIN_VIEW].pos));
+	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_main;
+
+	glPointSize(10.0f);
+	glEnable(GL_POINT_SMOOTH);
+
+	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	glBindVertexArray(VAO_cctv);
+	glUniform3fv(loc_primitive_color, 1, main_color[0]);
+	glDrawArrays(GL_POINTS, 0, 1);
+
+	glBindVertexArray(0);
+}
+
 
 #define N_TIGER_FRAMES 12
 Object tiger[N_TIGER_FRAMES];
@@ -400,7 +565,7 @@ float tiger_time = 0;
 glm::vec3 curr_pos;
 glm::vec3 tiger_route_pos[] = { glm::vec3(80.0f, 40.0f, 0.0f),glm::vec3(80.0f, 90.0f, 0.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(200.0f,90.0f,0.0f),
 	glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(200.0f, 60.0f,0.0f),glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(200.0f, 90.0f, 0.0f)
-	,glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(90.0f, 90.0f, 0.0f),glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(80.0f, 35.0f, 0.0f) };
+	,glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(90.0f, 90.0f, 0.0f),glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(80.0f, 40.0f, 0.0f) };
 int tiger_dir = 0;
 int turn_time = 0;
 
@@ -466,9 +631,9 @@ void draw_animated_tiger(int cam_idx) {
 		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 	else if (tiger_dir == 12) {
-		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] + glm::vec3(-5.0f, 0.0f, 0.0f));
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] + glm::vec3(-1.0f, 0.0f, 0.0f));
 		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -3 * (tiger_time - turn_time)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(5.0f, 0.0f, 0));
+		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(1.0f, 0.0f, 0));
 		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 
@@ -570,6 +735,9 @@ void draw_animated_tiger(int cam_idx) {
 	ModelViewProjectionMatrix = glm::scale(ModelViewProjectionMatrix, glm::vec3(20.0f, 20.0f, 20.0f));
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_axes(cam_idx);
+
+
+
 }
 
 void cleanup_OpenGL_stuffs(void) {

@@ -84,7 +84,7 @@ void display_camera(int cam_idx) {
 	glLineWidth(1.0f);
 
 	draw_static_object(&(static_objects[OBJ_BUILDING]), 0, cam_idx);
-
+	draw_static_object(&(static_objects[OBJ_MINIBUILDING]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_TABLE]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_TABLE]), 1, cam_idx);
 
@@ -94,12 +94,18 @@ void display_camera(int cam_idx) {
 	draw_static_object(&(static_objects[OBJ_LIGHT]), 3, cam_idx);
 	draw_static_object(&(static_objects[OBJ_LIGHT]), 4, cam_idx);
 
-	draw_static_object(&(static_objects[OBJ_TEAPOT]), 0, cam_idx);
-	draw_static_object(&(static_objects[OBJ_NEW_CHAIR]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_TEAPOT1]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_TEAPOT2]), 0, cam_idx);
+
+	draw_static_object(&(static_objects[OBJ_NEW_CHAIR1]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_NEW_CHAIR2]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_FRAME]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_NEW_PICTURE]), 0, cam_idx);
-	draw_static_object(&(static_objects[OBJ_COW]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_COW1]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_COW2]), 0, cam_idx);
 
+	display_cctv(cam_idx);
+	draw_main_cam(cam_idx);
 	draw_animated_tiger(cam_idx);
 
 }
@@ -174,6 +180,7 @@ void display(void) {
 	display_camera(TOP_VIEW);
 	display_camera(FRONT_VIEW);
 	display_camera(SIDE_VIEW);
+	
 	switch (CCTV_selected) {
 		case 1:
 			display_camera(CCTV1_VIEW);
@@ -553,6 +560,7 @@ void initialize_OpenGL(void) {
 void prepare_scene(void) {
 	define_axes();
 	define_static_objects();
+	prepare_cctv();
 	define_animated_tiger();
 }
 
