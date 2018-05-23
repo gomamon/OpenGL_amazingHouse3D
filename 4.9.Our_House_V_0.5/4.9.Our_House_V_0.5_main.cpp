@@ -41,7 +41,7 @@ typedef struct _VIEWPORT {
 VIEWPORT viewport[CAM_NUM];
 
 glm::mat4 ModelViewProjectionMatrix;
-glm::mat4 ModelViewMatrix[CAM_NUM], ViewMatrix[CAM_NUM], ProjectionMatrix[CAM_NUM], ViewProjectionMatrix[CAM_NUM];
+glm::mat4 ModelViewMatrix[CAM_NUM], ViewMatrix[CAM_NUM], ProjectionMatrix[CAM_NUM], ViewProjectionMatrix[CAM_NUM], ModelMatrix[CAM_NUM];
 
 #define TO_RADIAN 0.01745329252f  
 #define TO_DEGREE 57.295779513f
@@ -247,20 +247,25 @@ void keyboard(unsigned char key, int x, int y) {
 		glutPostRedisplay();
 		break;
 	case '1':
+		fprintf(stdout, "^^^ Show CCTV1.\n");
 		CCTV_selected = 1;
 		break;
 	case '2':
+		fprintf(stdout, "^^^ Show CCTV2.\n");
 		CCTV_selected = 2;
 		break;
 	case '3':
+		fprintf(stdout, "^^^ Show CCTV3.\n");
 		CCTV_selected = 3;
 		break;
 	case 'm':
 		if (main_view_mode == 0) {
+			fprintf(stdout, "^^^ Main camera mode.\n");
 			cam_selected = MAIN_VIEW;
 			main_view_mode = 1;
 		}
 		else {
+			fprintf(stdout, "^^^ Dynamic cctv mode.\n");
 			cam_selected = DYNAMIC_CCTV_VIEW;
 			main_view_mode = 0;
 		}
@@ -268,11 +273,15 @@ void keyboard(unsigned char key, int x, int y) {
 	case't':
 		move_mode++;
 		move_mode %= 2;
+		if (cam_selected == MAIN_VIEW) {
+			if (move_mode == 0) fprintf(stdout, "^^^ Rotation mode.\n");
+			else if (move_mode == 1) fprintf(stdout, "^^^ Translation mode.\n");
+		}
 		break;
 	}
 }
 void mousepress(int button, int state, int x, int y) {
-	//mouse click and move
+	//mouse right click and move
 	if(button == GLUT_LEFT_BUTTON) {
 		if (state == GLUT_DOWN) {
 			cc.left_button_status = GLUT_DOWN;
@@ -284,6 +293,8 @@ void mousepress(int button, int state, int x, int y) {
 			cam[cam_selected].move_status = 0;
 		}
 	}
+
+	//mouse left click and move
 	if( button == GLUT_RIGHT_BUTTON ) {
 		if (state == GLUT_DOWN) {
 			cc.right_button_status = GLUT_DOWN;
@@ -334,33 +345,33 @@ void reshape(int width, int height) {
 	viewport[TOP_VIEW].y = 0.65f*height; //500.0f;
 	viewport[TOP_VIEW].w = (int)(0.35f*width);
 	viewport[TOP_VIEW].h = (int)(0.35f*height);
-	//cam[TOP_VIEW].aspect_ratio = (0.3f * width) / (0.3f * height);
-	ProjectionMatrix[TOP_VIEW] = glm::perspective(cam[TOP_VIEW].fov_y, cam[TOP_VIEW].aspect_ratio, cam[TOP_VIEW].near_clip, cam[TOP_VIEW].far_clip);
+	ProjectionMatrix[TOP_VIEW] = glm::ortho(-cam[TOP_VIEW].pos.x, cam[TOP_VIEW].pos.x, -cam[TOP_VIEW].pos.y, cam[TOP_VIEW].pos.y, cam[TOP_VIEW].near_clip, cam[TOP_VIEW].far_clip);
 	ViewProjectionMatrix[TOP_VIEW] = ProjectionMatrix[TOP_VIEW] * ViewMatrix[TOP_VIEW];
 
-	cam[FRONT_VIEW].aspect_ratio = cam[TOP_VIEW].aspect_ratio; 
-	viewport[FRONT_VIEW].x = (int)(0.69f*width);
-	viewport[FRONT_VIEW].y = (int)(0.70f*height);
-	viewport[FRONT_VIEW].w = (int)(0.33f*width);
-	viewport[FRONT_VIEW].h = (int)(0.33f*height);
-	ProjectionMatrix[FRONT_VIEW] = glm::perspective(cam[FRONT_VIEW].fov_y, cam[FRONT_VIEW].aspect_ratio, cam[FRONT_VIEW].near_clip, cam[FRONT_VIEW].far_clip);
+	//cam[FRONT_VIEW].aspect_ratio = cam[TOP_VIEW].aspect_ratio; 
+	viewport[FRONT_VIEW].x = (int)(0.75f*width);
+	viewport[FRONT_VIEW].y = (int)(0.79f*height);
+	viewport[FRONT_VIEW].w = (int)(0.25f*width);
+	viewport[FRONT_VIEW].h = (int)(0.20f*height);
+	cam[FRONT_VIEW].aspect_ratio = viewport[FRONT_VIEW].w / viewport[FRONT_VIEW].h;
+	ProjectionMatrix[FRONT_VIEW] = glm::ortho(-cam[FRONT_VIEW].pos.x, cam[FRONT_VIEW].pos.x, -cam[FRONT_VIEW].pos.z, cam[FRONT_VIEW].pos.z, cam[FRONT_VIEW].near_clip, cam[FRONT_VIEW].far_clip);
 	ViewProjectionMatrix[FRONT_VIEW] = ProjectionMatrix[FRONT_VIEW] * ViewMatrix[FRONT_VIEW];
 
 
 	cam[SIDE_VIEW].aspect_ratio = cam[FRONT_VIEW].aspect_ratio; 
-	viewport[SIDE_VIEW].x = (int)(0.70f*width);
-	viewport[SIDE_VIEW].y = (int)(0.55f*height);
-	viewport[SIDE_VIEW].w = (int)(0.33f*width);
-	viewport[SIDE_VIEW].h = (int)(0.33f*height);
-	ProjectionMatrix[SIDE_VIEW] = glm::perspective(cam[SIDE_VIEW].fov_y, cam[SIDE_VIEW].aspect_ratio, cam[SIDE_VIEW].near_clip, cam[SIDE_VIEW].far_clip);
+	viewport[SIDE_VIEW].x = (int)(0.75f*width);
+	viewport[SIDE_VIEW].y = (int)(0.58f*height);
+	viewport[SIDE_VIEW].w = (int)(0.25f*width);
+	viewport[SIDE_VIEW].h = (int)(0.20f*height);
+	ProjectionMatrix[SIDE_VIEW] = glm::ortho(-cam[SIDE_VIEW].pos.y, cam[SIDE_VIEW].pos.y, -cam[SIDE_VIEW].pos.z, cam[SIDE_VIEW].pos.z, cam[SIDE_VIEW].near_clip, cam[SIDE_VIEW].far_clip);
 	ViewProjectionMatrix[SIDE_VIEW] = ProjectionMatrix[SIDE_VIEW] * ViewMatrix[SIDE_VIEW];
 
 	for (int cctv = CCTV1_VIEW; cctv <= CCTV3_VIEW; cctv++) {
 		cam[cctv].aspect_ratio = cam[TOP_VIEW].aspect_ratio;
 		viewport[cctv].x = (int)(0.35f*width);
-		viewport[cctv].y = (int)(0.65f*height);
-		viewport[cctv].w = (int)(0.35f*width);
-		viewport[cctv].h = (int)(0.35f*height);
+		viewport[cctv].y = (int)(0.60f*height);
+		viewport[cctv].w = (int)(0.40f*width);
+		viewport[cctv].h = (int)(0.40f*height);
 		ProjectionMatrix[cctv] = glm::perspective(cam[cctv].fov_y, cam[cctv].aspect_ratio, cam[cctv].near_clip, cam[cctv].far_clip);
 		ViewProjectionMatrix[cctv] = ProjectionMatrix[cctv] * ViewMatrix[cctv];
 	}
@@ -368,7 +379,7 @@ void reshape(int width, int height) {
 	viewport[MAIN_VIEW].x = (int)(0.05f*width);
 	viewport[MAIN_VIEW].y = (int)(0.05f*height);
 	viewport[MAIN_VIEW].w = (int)(0.9f*width);
-	viewport[MAIN_VIEW].h = (int)(0.6f*height);
+	viewport[MAIN_VIEW].h = (int)(0.5f*height);
 	cam[MAIN_VIEW].aspect_ratio = viewport[MAIN_VIEW].w / viewport[MAIN_VIEW].h;
 	ProjectionMatrix[MAIN_VIEW] = glm::perspective(cam[MAIN_VIEW].fov_y, cam[MAIN_VIEW].aspect_ratio, cam[MAIN_VIEW].near_clip, cam[MAIN_VIEW].far_clip);
 	ViewProjectionMatrix[MAIN_VIEW] = ProjectionMatrix[MAIN_VIEW] * ViewMatrix[MAIN_VIEW];
@@ -377,7 +388,7 @@ void reshape(int width, int height) {
 	viewport[DYNAMIC_CCTV_VIEW].x = (int)(0.05f*width);
 	viewport[DYNAMIC_CCTV_VIEW].y = (int)(0.05f*height);
 	viewport[DYNAMIC_CCTV_VIEW].w = (int)(0.9f*width);
-	viewport[DYNAMIC_CCTV_VIEW].h = (int)(0.6f*height);
+	viewport[DYNAMIC_CCTV_VIEW].h = (int)(0.5f*height);
 	cam[DYNAMIC_CCTV_VIEW].aspect_ratio = viewport[DYNAMIC_CCTV_VIEW].w / viewport[DYNAMIC_CCTV_VIEW].h;
 	ProjectionMatrix[DYNAMIC_CCTV_VIEW] = glm::perspective(cam[DYNAMIC_CCTV_VIEW].fov_y, cam[DYNAMIC_CCTV_VIEW].aspect_ratio, cam[DYNAMIC_CCTV_VIEW].near_clip, cam[DYNAMIC_CCTV_VIEW].far_clip);
 	ViewProjectionMatrix[DYNAMIC_CCTV_VIEW] = ProjectionMatrix[DYNAMIC_CCTV_VIEW] * ViewMatrix[DYNAMIC_CCTV_VIEW];
@@ -388,6 +399,7 @@ void reshape(int width, int height) {
 }
 
 void timer_scene(int timestamp_scene) {
+	tiger_time = (timestamp_scene)%end_time;
 	tiger_data.cur_frame = timestamp_scene % N_TIGER_FRAMES;
 	tiger_data.rotation_angle = (timestamp_scene % 360)*TO_RADIAN;
 	glutPostRedisplay();
@@ -401,7 +413,7 @@ void register_callbacks(void) {
 	glutMouseWheelFunc(mouseWheel);
 	glutMotionFunc(motion);
 	glutReshapeFunc(reshape);
-	glutTimerFunc(100, timer_scene, 0);
+	glutTimerFunc(10, timer_scene, 0);
 	glutCloseFunc(cleanup_OpenGL_stuffs);
 }
 
@@ -458,15 +470,12 @@ void initialize_camera() {
 
 	cam[SIDE_VIEW].move_status = 0;
 	cam[SIDE_VIEW].fov_y = 10.0f*TO_RADIAN;
-	//cam[SIDE_VIEW].aspect_ratio = 1.0f;
 	cam[SIDE_VIEW].near_clip = 1.0f;
 	cam[SIDE_VIEW].far_clip = 10000.0f;
 
 	set_ViewMatrix(2);
 
-	//ViewMatrix[2] = glm::lookAt(glm::vec3(600.0f, 600.0f, 200.0f), glm::vec3(125.0f, 80.0f, 25.0f),
-		//glm::vec3(0.0f, 0.0f, 1.0f));
-
+	//CCTV1
 	cam[CCTV1_VIEW].pos = glm::vec3(225.0f, 160.0f, 30.0f);
 	cam[CCTV1_VIEW].uaxis = glm::vec3(-0.5f, 0.5f, 0.0f);
 	cam[CCTV1_VIEW].naxis = glm::vec3(0.5f, 0.5f, 0.0f);
@@ -474,7 +483,6 @@ void initialize_camera() {
 
 	cam[CCTV1_VIEW].move_status = 0;
 	cam[CCTV1_VIEW].fov_y = 50.0f*TO_RADIAN;
-	//cam[SIDE_VIEW].aspect_ratio = 1.0f;
 	cam[CCTV1_VIEW].near_clip = 1.0f;
 	cam[CCTV1_VIEW].far_clip = 10000.0f;
 	set_ViewMatrix(CCTV1_VIEW);

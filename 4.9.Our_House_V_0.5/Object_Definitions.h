@@ -376,7 +376,7 @@ struct {
 } tiger_data;
 
 void define_animated_tiger(void) {
-	for (int i = 0; i < N_TIGER_FRAMES; i++) {
+	for (int i = 0 ; i < N_TIGER_FRAMES ; i++) {
 		sprintf(tiger[i].filename, "Data/Tiger_%d%d_triangles_vnt.geom", i / 10, i % 10);
 
 		tiger[i].n_fields = 8;
@@ -395,15 +395,171 @@ void define_animated_tiger(void) {
 	}
 }
 
+int end_time = 1000;
+float tiger_time = 0;
+glm::vec3 curr_pos;
+glm::vec3 tiger_route_pos[] = { glm::vec3(80.0f, 40.0f, 0.0f),glm::vec3(80.0f, 90.0f, 0.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(200.0f,90.0f,0.0f),
+	glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(200.0f, 60.0f,0.0f),glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(200.0f, 90.0f, 0.0f)
+	,glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(90.0f, 90.0f, 0.0f),glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(80.0f, 35.0f, 0.0f) };
+int tiger_dir = 0;
+int turn_time = 0;
+
 void draw_animated_tiger(int cam_idx) {
 
-	ModelViewMatrix[cam_idx] = glm::rotate(ViewMatrix[cam_idx], -tiger_data.rotation_angle, glm::vec3(0.0f, 0.0f, 1.0f));
- 	ModelViewMatrix[cam_idx] = glm::translate(ModelViewMatrix[cam_idx], glm::vec3(50.0f, 0.0f, 0.0f));
- 	ModelViewMatrix[cam_idx] *= tiger[tiger_data.cur_frame].ModelMatrix[0];
+	if (tiger_dir == 0) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] + glm::vec3(0.0f, tiger_time, 0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], (90.0f)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	}
+	else if (tiger_dir == 1) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] + glm::vec3(10.0f, 0.0f, 0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -3 * (tiger_time - turn_time)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(-10.0f, 0.0f, 0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], (90)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	}
+	else if (tiger_dir == 2){
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] + glm::vec3( tiger_time-turn_time, 0.0f, 0.0f));
+	}
+	else if (tiger_dir == 3) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir]);
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -3 * (tiger_time - turn_time)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(0.0f, 10.0f, 0));
+	}
+	else if (tiger_dir == 4) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] - glm::vec3(0.0f,tiger_time-turn_time, 0));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	}
+	else if (tiger_dir == 5) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir]);
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -3 * (tiger_time - turn_time)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(10.0f, 0.0f, 0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 
+	}
+	else if (tiger_dir == 6) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir]+glm::vec3(0.0f,10.0f,0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], 3 * (tiger_time - turn_time)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(0.0f, -10.0f, 0));
+	}
+	else if (tiger_dir == 7) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] + glm::vec3(0.0f, tiger_time - turn_time, 0));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], 90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	}
+	else if (tiger_dir == 8) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir]);
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], 3 * (tiger_time - turn_time)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(10.0f, 0.0f, 0));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], 90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	}
+	else if (tiger_dir == 9){
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] - glm::vec3( tiger_time - turn_time, 0.0f, 0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], 180 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	}
+	else if (tiger_dir == 10) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] + glm::vec3(0.0f, -10.0f, 0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], 3 * (tiger_time - turn_time)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(0.0f, 10.0f, 0));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], 180 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	}
+	else if (tiger_dir == 11) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] - glm::vec3(0.0f, tiger_time - turn_time, 0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	}
+	else if (tiger_dir == 12) {
+		ModelMatrix[cam_idx] = glm::translate(glm::mat4(1), tiger_route_pos[tiger_dir] + glm::vec3(-5.0f, 0.0f, 0.0f));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -3 * (tiger_time - turn_time)*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+		ModelMatrix[cam_idx] = glm::translate(ModelMatrix[cam_idx], glm::vec3(5.0f, 0.0f, 0));
+		ModelMatrix[cam_idx] = glm::rotate(ModelMatrix[cam_idx], -90 * TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	}
+
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix[cam_idx];
+
+
+	ModelViewMatrix[cam_idx] = glm::rotate(ModelViewMatrix[cam_idx], 90.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelViewMatrix[cam_idx] *= tiger[tiger_data.cur_frame].ModelMatrix[0];
+
+	
+	curr_pos.x = ModelMatrix[cam_idx][3][0]; 
+	curr_pos.y = ModelMatrix[cam_idx][3][1]; 
+	curr_pos.z = ModelMatrix[cam_idx][3][2];
+
+	//change direction
+	switch (tiger_dir) {
+	case 0:
+		if (curr_pos == tiger_route_pos[tiger_dir + 1] - glm::vec3(0.0f, 1.0f, 0.0f)) {
+			tiger_dir++;
+			turn_time = tiger_time;
+		}
+		break;
+	case 3:
+	case 1:
+		if (-3 * (tiger_time - turn_time) <= -90) {
+			tiger_dir++;
+			tiger_route_pos[tiger_dir] = curr_pos;
+			turn_time = tiger_time;
+		}
+		break;
+	case 2:
+		if (curr_pos.x >= tiger_route_pos[tiger_dir + 1].x) {
+			tiger_dir++;
+			turn_time = tiger_time;
+			tiger_route_pos[tiger_dir].x = curr_pos.x;
+		}
+		break;
+	case 4:
+	case 11:
+		if (curr_pos.y <= tiger_route_pos[tiger_dir + 1].y) {
+			tiger_dir++;
+			turn_time = tiger_time;
+			tiger_route_pos[tiger_dir].y = curr_pos.y;
+		}
+		break;
+	case 5:
+		if (-3 * (tiger_time - turn_time) <= -270) {
+			tiger_dir++;
+			tiger_route_pos[tiger_dir] = curr_pos;
+			turn_time = tiger_time;
+		}
+		break;
+	case 6:
+	case 8:
+	case 10:
+		if (3 * (tiger_time - turn_time) >= 90) {
+			tiger_dir++;
+			tiger_route_pos[tiger_dir] = curr_pos;
+			turn_time = tiger_time;
+		}
+		break;
+	case 7:
+		if (curr_pos.y >= tiger_route_pos[tiger_dir + 1].y) {
+			tiger_dir++;
+			turn_time = tiger_time;
+			tiger_route_pos[tiger_dir].y = curr_pos.y;
+		}
+		break;
+	case 9:
+		if (curr_pos.x <= tiger_route_pos[tiger_dir + 1].x) {
+			tiger_dir++;
+			turn_time = tiger_time;
+			tiger_route_pos[tiger_dir] = curr_pos;
+		}
+		break;
+	case 12:
+		if (-3 * (tiger_time - turn_time) <= -180) {
+			tiger_dir=0;
+			turn_time = tiger_time;
+			end_time = tiger_time;
+		}
+	}
+
+	
 	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
+
+
+
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 
+	
 	glUniform3f(loc_primitive_color, tiger[tiger_data.cur_frame].material[0].diffuse.r,
 		tiger[tiger_data.cur_frame].material[0].diffuse.g, tiger[tiger_data.cur_frame].material[0].diffuse.b);
 
