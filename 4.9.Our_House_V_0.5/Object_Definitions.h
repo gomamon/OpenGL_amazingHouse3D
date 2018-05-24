@@ -47,9 +47,7 @@ int n_static_objects = 0;
 #define OBJ_IRONMAN				13
 
 
-
-/*
-
+///////////////////////car///////////////
 
 glm::mat4 ModelMatrix_CAR_BODY, ModelMatrix_CAR_WHEEL, ModelMatrix_CAR_NUT, ModelMatrix_CAR_DRIVER;
 glm::mat4 ModelMatrix_CAR_BODY_to_DRIVER; // computed only once in initialize_camera()
@@ -225,7 +223,7 @@ void draw_wheel_and_nut(int cam_idx) {
 	// angle is used in Hierarchical_Car_Correct later
 	int i;
 
-	glUniform3f(loc_primitive_color, 0.000f, 0.808f, 0.820f); // color name: DarkTurquoise
+	glUniform3f(loc_primitive_color, 0.800f, 0.808f, 0.020f); // color name: DarkTurquoise
 	draw_geom_obj(GEOM_OBJ_ID_CAR_WHEEL); // draw wheel
 
 	for (i = 0; i < 5; i++) {
@@ -240,37 +238,34 @@ void draw_wheel_and_nut(int cam_idx) {
 }
 
 void draw_car_dummy(int cam_idx) {
-	glUniform3f(loc_primitive_color, 0.498f, 1.000f, 0.831f); // color name: Aquamarine
+	glUniform3f(loc_primitive_color, 0.20f, 0.20f, 1.0f); // color name: Aquamarine
 	draw_geom_obj(GEOM_OBJ_ID_CAR_BODY); // draw body
 
-	glLineWidth(2.0f);
-	glLineWidth(1.0f);
-
-	ModelMatrix_CAR_DRIVER = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(-3.0f, 0.5f, 2.5f));
-	ModelMatrix_CAR_DRIVER = glm::rotate(ModelMatrix_CAR_DRIVER, TO_RADIAN*90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_DRIVER;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	glLineWidth(5.0f);
-	glLineWidth(1.0f);
 
 	ModelMatrix_CAR_WHEEL = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(-3.9f, -3.5f, 4.5f));
+	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, -30 * TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 200 * rotation_angle_car*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_wheel_and_nut(cam_idx);  // draw wheel 0
 
 	ModelMatrix_CAR_WHEEL = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(3.9f, -3.5f, 4.5f));
+	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 200 * rotation_angle_car*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_wheel_and_nut(cam_idx);  // draw wheel 1
 
 	ModelMatrix_CAR_WHEEL = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(-3.9f, -3.5f, -4.5f));
 	ModelMatrix_CAR_WHEEL = glm::scale(ModelMatrix_CAR_WHEEL, glm::vec3(1.0f, 1.0f, -1.0f));
+	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 30 * TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 80 * rotation_angle_car*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_wheel_and_nut(cam_idx);  // draw wheel 2
 
 	ModelMatrix_CAR_WHEEL = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(3.9f, -3.5f, -4.5f));
 	ModelMatrix_CAR_WHEEL = glm::scale(ModelMatrix_CAR_WHEEL, glm::vec3(1.0f, 1.0f, -1.0f));
+	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 80 * rotation_angle_car*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_wheel_and_nut(cam_idx);  // draw wheel 3
@@ -278,29 +273,19 @@ void draw_car_dummy(int cam_idx) {
 
 
 void display_car(int cam_idx) {
-	glm::mat4 ModelMatrix_big_cow, ModelMatrix_small_cow;
-	glm::mat4 ModelMatrix_big_box, ModelMatrix_small_box;
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	ModelMatrix_CAR_BODY = glm::rotate(glm::mat4(1.0f), -rotation_angle_car, glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelMatrix_CAR_BODY = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(20.0f, 4.89f, 0.0f));
+	ModelMatrix_CAR_BODY = glm::translate(glm::mat4(1.0f),glm::vec3(40.0f, 87.0f, 0.0f));
+	ModelMatrix_CAR_BODY = glm::rotate(ModelMatrix_CAR_BODY, 90.0f*TO_RADIAN, glm::vec3(1.0f, 0.0f, 0.0f));
+	ModelMatrix_CAR_BODY = glm::rotate(ModelMatrix_CAR_BODY, -3*rotation_angle_car, glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelMatrix_CAR_BODY = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(14.0f, 0.0f, 0.0f));
 	ModelMatrix_CAR_BODY = glm::rotate(ModelMatrix_CAR_BODY, 90.0f*TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
+	
 
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_BODY;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+
 	draw_car_dummy(cam_idx);
 
-	ModelViewProjectionMatrix = glm::scale(ViewProjectionMatrix[cam_idx], glm::vec3(5.0f, 5.0f, 5.0f));
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	glLineWidth(2.0f);
-	glLineWidth(1.0f);
-
-	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx];
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-
-
-	glutSwapBuffers();
 }
 
 
@@ -320,17 +305,13 @@ void cleanup_car(void) {
 
 
 
+///////////////////////////////////////////////////////
 
 
 
 
 
 
-
-
-
-
-*/
 
 GLfloat view_line[2][3] = { {0.0f, 0.0f, 0.0f }, {1.0f, 0.0f, 0.0f} };
 
@@ -521,7 +502,7 @@ void prepare_geom_of_static_object(Object *obj_ptr) {
 
 void define_static_objects(void) {
 	
-	// godzilla
+	//ironman
 	strcpy(static_objects[OBJ_IRONMAN].filename, "Data/IronMan.geom");
 	static_objects[OBJ_IRONMAN].n_fields = 8;
 
@@ -539,7 +520,7 @@ void define_static_objects(void) {
 
 	static_objects[OBJ_IRONMAN].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	static_objects[OBJ_IRONMAN].material[0].ambient = glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
-	static_objects[OBJ_IRONMAN].material[0].diffuse = glm::vec4(0.54f, 0.89f, 0.63f, 1.0f);
+	static_objects[OBJ_IRONMAN].material[0].diffuse = glm::vec4(0.999f, 0.30f, 0.0f, 1.0f);
 	static_objects[OBJ_IRONMAN].material[0].specular = glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
 	static_objects[OBJ_IRONMAN].material[0].exponent = 128.0f*0.1f;
 
@@ -563,7 +544,7 @@ void define_static_objects(void) {
 
 	static_objects[OBJ_GODZILLA].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	static_objects[OBJ_GODZILLA].material[0].ambient = glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
-	static_objects[OBJ_GODZILLA].material[0].diffuse = glm::vec4(0.54f, 0.89f, 0.63f, 1.0f);
+	static_objects[OBJ_GODZILLA].material[0].diffuse = glm::vec4(0.14f, 0.98f, 0.32f, 1.0f);
 	static_objects[OBJ_GODZILLA].material[0].specular = glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
 	static_objects[OBJ_GODZILLA].material[0].exponent = 128.0f*0.1f;
 
@@ -946,6 +927,11 @@ void display_cctv(int cam_idx) {
 	draw_cctv();
 
 	ModelMatrix_cctv = glm::translate(glm::mat4(1.0f), glm::vec3(cam[CCTV3_VIEW].pos));
+	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_cctv;
+
+	draw_cctv();
+
+	ModelMatrix_cctv = glm::translate(glm::mat4(1.0f), glm::vec3(cam[DYNAMIC_CCTV_VIEW].pos));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_cctv;
 
 	draw_cctv();

@@ -109,6 +109,7 @@ void display_camera(int cam_idx) {
 	display_cctv(cam_idx);
 	draw_main_cam(cam_idx);
 	draw_animated_tiger(cam_idx);
+	display_car(cam_idx);
 
 }
 
@@ -407,10 +408,7 @@ void reshape(int width, int height) {
 }
 
 void timer_scene(int timestamp_scene) {
-//	rotation_angle_car = (timestamp_scene % 360)*TO_RADIAN;
-//	glutPostRedisplay();
-//	glutTimerFunc(100, timer_scene, (timestamp_scene + 1) % INT_MAX);
-
+	rotation_angle_car = (timestamp_scene % 360)*TO_RADIAN;
 
 	tiger_time = (timestamp_scene)%end_time;
 	tiger_data.cur_frame = timestamp_scene % N_TIGER_FRAMES;
@@ -564,12 +562,18 @@ void initialize_OpenGL(void) {
 }
 
 void prepare_scene(void) {
+	char car[][50] = { "Data/car_body_triangles_v.txt" ,"Data/car_wheel_triangles_v.txt","Data/car_nut_triangles_v.txt" };
 	define_axes();
 	define_static_objects();
 	prepare_cctv();
 	prepare_view();
-//	prepare_path();
+	prepare_path();
 	define_animated_tiger();
+
+	prepare_path();
+	prepare_geom_obj(GEOM_OBJ_ID_CAR_BODY, car[0], GEOM_OBJ_TYPE_V);
+	prepare_geom_obj(GEOM_OBJ_ID_CAR_WHEEL,car[1] , GEOM_OBJ_TYPE_V);
+	prepare_geom_obj(GEOM_OBJ_ID_CAR_NUT, car[2], GEOM_OBJ_TYPE_V);
 }
 
 void initialize_renderer(void) {
