@@ -1,0 +1,60 @@
+﻿1>------ 빌드 시작: 프로젝트: 4.9.Our_House_V_0.5, 구성: Debug x64 ------
+1>4.9.Our_House_V_0.5_main.cpp
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(195): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(207): note: 'fopen' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(219): warning C4101: 'filename' :참조되지 않은 지역 변수입니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(218): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(438): warning C4305: '=': 'double'에서 'GLfloat'(으)로 잘립니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(458): warning C4305: '=': 'double'에서 'GLfloat'(으)로 잘립니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(250): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(274): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(297): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(314): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(334): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(363): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(422): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(441): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(461): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(482): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(505): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(527): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(548): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(571): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\string.h(132): note: 'strcpy' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(704): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+1>c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(1772): note: 'sprintf' 선언을 참조하십시오.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(815): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(823): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(829): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(837): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(845): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(854): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(860): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(867): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(874): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\object_definitions.h(875): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(329): warning C4244: '+=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(338): warning C4244: '+=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(355): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(356): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(367): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(394): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(403): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(413): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+1>c:\users\toothless\documents\graphics\4.9.our_house_v_0.5\4.9.our_house_v_0.5\4.9.our_house_v_0.5_main.cpp(614): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+1>4.9.Our_House_V_0.5.vcxproj -> C:\Users\Toothless\Documents\graphics\4.9.Our_House_V_0.5\x64\Debug\4.9.Our_House_V_0.5.exe
+1>"4.9.Our_House_V_0.5.vcxproj" 프로젝트를 빌드했습니다.
+========== 빌드: 성공 1, 실패 0, 최신 0, 생략 0 ==========

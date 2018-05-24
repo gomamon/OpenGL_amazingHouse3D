@@ -103,7 +103,9 @@ void display_camera(int cam_idx) {
 	draw_static_object(&(static_objects[OBJ_NEW_PICTURE]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_COW1]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_COW2]), 0, cam_idx);
-
+	draw_static_object(&(static_objects[OBJ_GODZILLA]), 0, cam_idx);
+	draw_static_object(&(static_objects[OBJ_IRONMAN]), 0, cam_idx);
+	display_view(cam_idx);
 	display_cctv(cam_idx);
 	draw_main_cam(cam_idx);
 	draw_animated_tiger(cam_idx);
@@ -146,8 +148,8 @@ void motion(int x, int y) {
 				break;
 			case 1:	//trainslation mode
 				if (cc.left_button_status == GLUT_DOWN) {
-					renew_cam_position(cam_selected, -dx*10, cam[cam_selected].uaxis);
-					renew_cam_position(cam_selected, -dy*10, cam[cam_selected].vaxis);
+					renew_cam_position(cam_selected, -10*dx, cam[cam_selected].uaxis);
+					renew_cam_position(cam_selected, -10*dy, cam[cam_selected].vaxis);
 				}
 				else if (cc.right_button_status == GLUT_DOWN) {
 					renew_cam_position(cam_selected, -dy*10 , cam[cam_selected].naxis);
@@ -401,11 +403,15 @@ void reshape(int width, int height) {
 	ViewProjectionMatrix[DYNAMIC_CCTV_VIEW] = ProjectionMatrix[DYNAMIC_CCTV_VIEW] * ViewMatrix[DYNAMIC_CCTV_VIEW];
 
 
-
 	glutPostRedisplay();
 }
 
 void timer_scene(int timestamp_scene) {
+//	rotation_angle_car = (timestamp_scene % 360)*TO_RADIAN;
+//	glutPostRedisplay();
+//	glutTimerFunc(100, timer_scene, (timestamp_scene + 1) % INT_MAX);
+
+
 	tiger_time = (timestamp_scene)%end_time;
 	tiger_data.cur_frame = timestamp_scene % N_TIGER_FRAMES;
 	tiger_data.rotation_angle = (timestamp_scene % 360)*TO_RADIAN;
@@ -529,7 +535,7 @@ void initialize_camera() {
 	cam[MAIN_VIEW].move_status = 0;
 	cam[MAIN_VIEW].fov_y = 14.0f*TO_RADIAN;
 	cam[MAIN_VIEW].near_clip = 1.0f;
-	cam[MAIN_VIEW].far_clip = 10000.0f;
+	cam[MAIN_VIEW].far_clip = 1000.0f;
 	set_ViewMatrix(MAIN_VIEW);
 
 	cam[DYNAMIC_CCTV_VIEW].pos = glm::vec3(200.0f, 40.0f, 50.0f);
@@ -561,6 +567,8 @@ void prepare_scene(void) {
 	define_axes();
 	define_static_objects();
 	prepare_cctv();
+	prepare_view();
+//	prepare_path();
 	define_animated_tiger();
 }
 
