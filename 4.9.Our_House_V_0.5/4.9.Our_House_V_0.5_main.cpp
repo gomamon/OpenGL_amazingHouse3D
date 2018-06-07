@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "Shaders/LoadShaders.h"
+#include "My_shader.h"
 GLuint h_ShaderProgram; // handle to shader program
 GLint loc_ModelViewProjectionMatrix, loc_primitive_color; // indices of uniform variables
 
