@@ -13,6 +13,10 @@ GLint loc_ModelViewProjectionMatrix, loc_primitive_color; // indices of uniform 
 GLint loc_global_ambient_color;
 loc_light_Parameters loc_light[NUMBER_OF_LIGHT_SUPPORTED];
 loc_Material_Parameters loc_material;
+//-------
+GLint loc_wall_effect, loc_wall_width;
+GLint loc_blind_effect, loc_cartoon_effect, loc_cartoon_levels;
+//-------
 GLint loc_ModelViewProjectionMatrix_PS, loc_ModelViewMatrix_PS, loc_ModelViewMatrixInvTrans_PS;
 GLint loc_ModelViewProjectionMatrix_GS, loc_ModelViewMatrix_GS, loc_ModelViewMatrixInvTrans_GS;
 
@@ -245,6 +249,8 @@ void display_camera(int cam_idx) {
 	else		glUseProgram(h_ShaderProgram_PS);
 
 	//set_up_scene_lights(cam_idx);
+
+	draw_wall(cam_idx);
 
 	draw_static_object(&(static_objects[OBJ_BUILDING]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_MINIBUILDING]), 0, cam_idx);
@@ -975,9 +981,13 @@ void prepare_scene(void) {
 	prepare_geom_obj(GEOM_OBJ_ID_CAR_BODY, car[0], GEOM_OBJ_TYPE_V);
 	prepare_geom_obj(GEOM_OBJ_ID_CAR_WHEEL,car[1] , GEOM_OBJ_TYPE_V);
 	prepare_geom_obj(GEOM_OBJ_ID_CAR_NUT, car[2], GEOM_OBJ_TYPE_V);
-	
+	/////
+	prepare_rectangle();
+	initialize_wall();
+	initialize_blind();
+	initialize_cartoon();
+	////
 	prepare_cctv();
-	
 
 	set_up_scene_lights(MAIN_VIEW);
 	

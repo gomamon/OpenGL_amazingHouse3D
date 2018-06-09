@@ -70,7 +70,7 @@ void set_material(Object *obj_ptr) {
 }
 
 
-/////////////rectangle//////////////////////
+//------------------------WALL----------------------------------
 GLuint rectangle_VBO, rectangle_VAO;
 GLfloat rectangle_vertices[12][3] = {
 	{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f},
@@ -78,7 +78,7 @@ GLfloat rectangle_vertices[12][3] = {
 	{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}
 };
 
-
+Material_Parameters material_wall;
 void prepare_rectangle() {
 	glGenBuffers(1, &rectangle_VBO);
 
@@ -87,10 +87,92 @@ void prepare_rectangle() {
 
 	glGenVertexArrays(1, &rectangle_VAO);
 	glBindVertexArray(rectangle_VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, rectangle_VBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), BUFFER_OFFSET(0));
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), BUFFER_OFFSET(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	material_wall.ambient_color[0] = 0.1745f; material_wall.ambient_color[1] = 0.0413f;
+	material_wall.ambient_color[2] = 0.0117f; material_wall.ambient_color[3] = 1.0f;
+
+	material_wall.diffuse_color[0] = 0.6142f; material_wall.diffuse_color[1] = 0.0413f;
+	material_wall.diffuse_color[2] = 0.0413f; material_wall.diffuse_color[3] = 1.0f;
+
+	material_wall.specular_color[0] = 0.7278f;	material_wall.specular_color[1] = 0.6269f;
+	material_wall.specular_color[2] = 0.6269f;	material_wall.specular_color[3] = 1.0f;
+
+	material_wall.specular_exponent = 20.5f;
+
+	material_wall.emissive_color[0] = 0.0f;	material_wall.emissive_color[1] = 0.0f;
+	material_wall.emissive_color[2] = 0.0f;	material_wall.emissive_color[3] = 1.0f;
+
 }
 
-///////////////////////////////////
+int flag_draw_wall, flag_wall_effect, flag_blind_effect, flag_cartoon_effect;
+float wall_width, cartoon_levels;
 
+void set_material_wall() {
+	glUniform4fv(loc_material.ambient_color, 1,material_wall.ambient_color );
+	glUniform4fv(loc_material.diffuse_color, 1, material_wall.diffuse_color);
+	glUniform4fv(loc_material.specular_color, 1, material_wall.specular_color);
+	glUniform1f(loc_material.specular_exponent, material_wall.specular_exponent);
+	glUniform4fv(loc_material.emissive_color, 1, material_wall.emissive_color);
+}
+/*
+void draw_wall() {
+	glFrontFace(GL_CCW);
+
+	glBindVertexArray(rectangle_VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}*/
+
+void initialize_wall() {
+	flag_draw_wall = flag_wall_effect = 0;
+	wall_width = 0.125f;
+}
+
+void initialize_blind() {
+	flag_blind_effect = 0;
+}
+
+void initialize_cartoon() {
+	flag_cartoon_effect = 0; cartoon_levels = 3.0f;
+}
+
+void draw_wall(int cam_idx) {
+	set_material_wall();
+	ModelViewMatrix[cam_idx] = glm::scale(ViewMatrix[cam_idx], glm::vec3(250.0f, 250.0f, 250.0f));
+	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+
+	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
+
+	glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+
+	glUniform1i(loc_wall_effect, flag_wall_effect);
+	
+	glFrontFace(GL_CCW);
+
+	glBindVertexArray(rectangle_VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+
+	glUniform1i(loc_wall_effect, 0);
+
+}
+
+//---------------------------------------------------------------------------
+//=========================================
+
+
+
+//======================================================
 ///////////////////////car///////////////
 
 glm::mat4 ModelMatrix_CAR_BODY, ModelMatrix_CAR_WHEEL, ModelMatrix_CAR_NUT, ModelMatrix_CAR_DRIVER;
@@ -703,11 +785,14 @@ void define_static_objects(void) {
 
     static_objects[OBJ_BUILDING].ModelMatrix[0] = glm::mat4(1.0f);
 	
+	//rgb(60, 163, 232)
+	//rgb(6, 33, 51)
+	//rgb(165, 209, 238)
 	static_objects[OBJ_BUILDING].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].ambient = glm::vec4(40 / 255.0f, 150 / 255.0f, 70 / 255.0f, 1.0f); //glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].diffuse = glm::vec4(0.54f, 0.89f, 0.63f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].specular = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);//glm::vec4(170 / 255.0f, 240 / 255.0f, 190 / 255.0f, 1.0f); //glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].exponent = 25.5f;//128.0f*0.1f;
+	static_objects[OBJ_BUILDING].material[0].ambient = glm::vec4(6 / 255.0f, 33 / 255.0f, 51 / 255.0f, 1.0f); //glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
+	static_objects[OBJ_BUILDING].material[0].diffuse = glm::vec4(60 / 255.0f, 163 / 255.0f, 232 / 255.0f, 1.0f);
+	static_objects[OBJ_BUILDING].material[0].specular = glm::vec4(165 / 255.0f, 209 / 255.0f, 238 / 255.0f, 1.0f);//glm::vec4(170 / 255.0f, 240 / 255.0f, 190 / 255.0f, 1.0f); //glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
+	static_objects[OBJ_BUILDING].material[0].exponent = 128.0f*0.1f;
 
 	// building
 	strcpy(static_objects[OBJ_MINIBUILDING].filename, "Data/Building1_vnt.geom");
