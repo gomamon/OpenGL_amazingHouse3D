@@ -69,6 +69,28 @@ void set_material(Object *obj_ptr) {
 	glUniform4fv(loc_material.emissive_color, 1, vec_to_float(obj_ptr->material[0].emission));
 }
 
+
+/////////////rectangle//////////////////////
+GLuint rectangle_VBO, rectangle_VAO;
+GLfloat rectangle_vertices[12][3] = {
+	{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f},
+	{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f},
+	{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}
+};
+
+
+void prepare_rectangle() {
+	glGenBuffers(1, &rectangle_VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, rectangle_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_vertices), &rectangle_vertices[0][0], GL_STATIC_DRAW);
+
+	glGenVertexArrays(1, &rectangle_VAO);
+	glBindVertexArray(rectangle_VAO);
+}
+
+///////////////////////////////////
+
 ///////////////////////car///////////////
 
 glm::mat4 ModelMatrix_CAR_BODY, ModelMatrix_CAR_WHEEL, ModelMatrix_CAR_NUT, ModelMatrix_CAR_DRIVER;
@@ -682,10 +704,10 @@ void define_static_objects(void) {
     static_objects[OBJ_BUILDING].ModelMatrix[0] = glm::mat4(1.0f);
 	
 	static_objects[OBJ_BUILDING].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].ambient = glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
+	static_objects[OBJ_BUILDING].material[0].ambient = glm::vec4(40 / 255.0f, 150 / 255.0f, 70 / 255.0f, 1.0f); //glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
 	static_objects[OBJ_BUILDING].material[0].diffuse = glm::vec4(0.54f, 0.89f, 0.63f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].specular = glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].exponent = 128.0f*0.1f;
+	static_objects[OBJ_BUILDING].material[0].specular = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);//glm::vec4(170 / 255.0f, 240 / 255.0f, 190 / 255.0f, 1.0f); //glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
+	static_objects[OBJ_BUILDING].material[0].exponent = 25.5f;//128.0f*0.1f;
 
 	// building
 	strcpy(static_objects[OBJ_MINIBUILDING].filename, "Data/Building1_vnt.geom");
@@ -965,7 +987,7 @@ void define_static_objects(void) {
 	static_objects[OBJ_COW2].material[0].specular = glm::vec4(0.992157f, 0.941176f, 0.807843f, 1.0f);
 	static_objects[OBJ_COW2].material[0].exponent = 0.21794872f*0.6f;
 
-	n_static_objects = 11;
+	n_static_objects = 15;
 }
 
 
@@ -987,7 +1009,7 @@ void draw_static_object(Object *obj_ptr, int instance_ID, int cam_idx) {
 	}
 	else {
 		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
 		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
 	}
 	glUniform3f(loc_primitive_color, obj_ptr->material[instance_ID].diffuse.r,
