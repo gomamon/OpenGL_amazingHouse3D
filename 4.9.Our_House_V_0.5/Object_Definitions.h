@@ -245,13 +245,6 @@ void free_geom_obj(int geom_obj_ID) {
 	glDeleteBuffers(1, &geom_obj_VBO[geom_obj_ID]);
 }
 
-void set_materials_car(int car_num) {
-
-
-
-}
-
-
 void draw_wheel_and_nut(int cam_idx) {
 	// angle is used in Hierarchical_Car_Correct later
 	int i;
@@ -608,7 +601,7 @@ void prepare_geom_of_static_object(Object *obj_ptr) {
 	glGenBuffers(1, &(obj_ptr->VBO));
 
 	glBindBuffer(GL_ARRAY_BUFFER, obj_ptr->VBO);
-	glBufferData(GL_ARRAY_BUFFER, obj_ptr->n_triangles*n_bytes_per_triangle, obj_ptr->vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (obj_ptr->n_triangles)*n_bytes_per_triangle, obj_ptr->vertices, GL_STATIC_DRAW);
 
 	compute_AABB(obj_ptr);
 	free(obj_ptr->vertices);
@@ -620,7 +613,7 @@ void prepare_geom_of_static_object(Object *obj_ptr) {
 	glBindBuffer(GL_ARRAY_BUFFER, obj_ptr->VBO);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(LOC_NORMAL, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 
@@ -1001,7 +994,7 @@ void draw_static_object(Object *obj_ptr, int instance_ID, int cam_idx) {
 		obj_ptr->material[instance_ID].diffuse.g, obj_ptr->material[instance_ID].diffuse.b);
 
 	glBindVertexArray(obj_ptr->VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3 * obj_ptr->n_triangles);
+	glDrawArrays(GL_TRIANGLES, 0, 3*obj_ptr->n_triangles);
 	glBindVertexArray(0);
 }
 

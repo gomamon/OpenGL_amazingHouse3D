@@ -90,11 +90,44 @@ typedef struct _CALLBACK_CONTEXT {
 CALLBACK_CONTEXT cc;
 
 
-
 void set_up_scene_lights(int cam_idx) {
-
+	
 	light[0].light_on = 1;
-	light[0].position[0] = 0.0f; light[0].position[1] = 10.0f; 	// point light position in EC
+	light[0].position[0] = 0.0f; light[0].position[1] = 0.0f; 	// point light position in EC
+	light[0].position[2] = 10.0f; light[0].position[3] = 1.0f;
+
+	light[0].ambient_color[0] = 1.0f; light[0].ambient_color[1] = 1.0f;
+	light[0].ambient_color[2] = 1.0f; light[0].ambient_color[3] = 1.0f;
+
+	light[0].diffuse_color[0] = 1.0f; light[0].diffuse_color[1] = 1.0f;
+	light[0].diffuse_color[2] = 1.0f; light[0].diffuse_color[3] = 1.0f;
+
+	light[0].specular_color[0] = 1.0f; light[0].specular_color[1] = 1.0f;
+	light[0].specular_color[2] = 1.0f; light[0].specular_color[3] = 1.0f;
+	/*
+	// spot_light_WC: use light 1
+	light[1].light_on = 0;
+	light[1].position[0] = 120.0f; light[1].position[1] = 85.0f; // spot light position in WC
+	light[1].position[2] = 25.0f; light[1].position[3] = 1.0f;
+
+	light[1].ambient_color[0] = 1.0f; light[1].ambient_color[1] = 1.0f;
+	light[1].ambient_color[2] = 1.0f; light[1].ambient_color[3] = 1.0f;
+
+	light[1].diffuse_color[0] = 0.82f; light[1].diffuse_color[1] = 0.82f;
+	light[1].diffuse_color[2] = 0.82f; light[1].diffuse_color[3] = 1.0f;
+
+	light[1].specular_color[0] = 0.82f; light[1].specular_color[1] = 0.82f;
+	light[1].specular_color[2] = 0.82f; light[1].specular_color[3] = 1.0f;
+
+	//light[1].spot_direction[0] = 0.0f; light[1].spot_direction[1] = -1.0f; // spot light direction in WC
+	//light[1].spot_direction[2] = 0.0f;
+	//light[1].spot_cutoff_angle = 20.0f;
+	//light[1].spot_exponent = 20.0f;
+	*/
+	/*
+	// point_light_EC: use light 0
+	light[0].light_on = 1;
+	light[0].position[0] = 0.0f; light[0].position[1] = 0.0f; 	// point light position in EC
 	light[0].position[2] = 0.0f; light[0].position[3] = 1.0f;
 
 	light[0].ambient_color[0] = 0.3f; light[0].ambient_color[1] = 0.3f;
@@ -105,7 +138,7 @@ void set_up_scene_lights(int cam_idx) {
 
 	light[0].specular_color[0] = 0.9f; light[0].specular_color[1] = 0.9f;
 	light[0].specular_color[2] = 0.9f; light[0].specular_color[3] = 1.0f;
-
+	*/
 	// spot_light_WC: use light 1
 	light[1].light_on = 1;
 	light[1].position[0] = -200.0f; light[1].position[1] = 500.0f; // spot light position in WC
@@ -123,7 +156,7 @@ void set_up_scene_lights(int cam_idx) {
 	light[1].spot_direction[0] = 0.0f; light[1].spot_direction[1] = -1.0f; // spot light direction in WC
 	light[1].spot_direction[2] = 0.0f;
 	light[1].spot_cutoff_angle = 20.0f;
-	light[1].spot_exponent = 20.0f;
+	light[1].spot_exponent = 27.0f;
 
 	if(shader_mode==GS)		glUseProgram(h_ShaderProgram_GS);
 	else	glUseProgram(h_ShaderProgram_PS);
@@ -145,13 +178,14 @@ void set_up_scene_lights(int cam_idx) {
 	// need to supply direction in EC for shading in this example shader
 	// note that the viewing transform is a rigid body transform
 	// thus transpose(inverse(mat3(ViewMatrix)) = mat3(ViewMatrix)
-
+		/*
 		glm::vec3 direction_EC = glm::mat3(ViewMatrix[cam_idx]) * glm::vec3(light[1].spot_direction[0], light[1].spot_direction[1],
 		light[1].spot_direction[2]);
 
 		glUniform3fv(loc_light[1].spot_direction, 1, &direction_EC[0]);
 		glUniform1f(loc_light[1].spot_cutoff_angle, light[1].spot_cutoff_angle);
 		glUniform1f(loc_light[1].spot_exponent, light[1].spot_exponent);
+		*/
 		glUseProgram(0);
 
 
@@ -169,7 +203,8 @@ void display_camera(int cam_idx) {
 	glLineWidth(2.0f);
 	draw_axes(cam_idx);
 	glLineWidth(1.0f);
-
+		display_view(cam_idx);
+	display_cctv(cam_idx);
 	if(shader_mode==GS)		glUseProgram(h_ShaderProgram_GS);
 	else		glUseProgram(h_ShaderProgram_PS);
 	draw_static_object(&(static_objects[OBJ_BUILDING]), 0, cam_idx);
@@ -194,8 +229,7 @@ void display_camera(int cam_idx) {
 	draw_static_object(&(static_objects[OBJ_COW2]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_GODZILLA]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_IRONMAN]), 0, cam_idx);
-	display_view(cam_idx);
-	display_cctv(cam_idx);
+
 	draw_main_cam(cam_idx);
 	draw_animated_tiger(cam_idx);
 	display_car(cam_idx);
@@ -256,9 +290,6 @@ void motion(int x, int y) {
 		if (cc.left_button_status == GLUT_DOWN) {
 			renew_cam_rotation(cam_selected, -dy, -cam[cam_selected].uaxis);
 			renew_cam_rotation(cam_selected, dx, -cam[cam_selected].vaxis);
-		}
-		if (cc.right_button_status == GLUT_DOWN) {
-			renew_cam_rotation(cam_selected, 2 * dx, -cam[cam_selected].naxis);
 		}
 
 	}
@@ -499,7 +530,7 @@ void mouseWheel(int button, int dir, int x, int y)
 	if (glutGetModifiers() == GLUT_ACTIVE_CTRL) {
 		move_mode = 0;
 	}
-	if (move_mode == 0) {
+	if (move_mode == 0 || cam_selected == DYNAMIC_CCTV_VIEW) {
 		move_mode = 1;
 		if (dir < 0) {
 			//	renew_cam_position(cam_selected, dir * 10, cam[cam_selected].naxis);
@@ -521,7 +552,7 @@ void mouseWheel(int button, int dir, int x, int y)
 			}
 		}
 	}
-	else {
+	else if(cam_selected != DYNAMIC_CCTV_VIEW) {
 		if (dir < 0) {
 			renew_cam_position(cam_selected, dir * 100, cam[cam_selected].naxis);
 			set_ViewMatrix(cam_selected);
@@ -874,8 +905,11 @@ void initialize_camera() {
 
 
 void initialize_OpenGL(void) {
-	glEnable(GL_DEPTH_TEST); // Default state
+	glDisable(GL_DEPTH_TEST); //glEnable(GL_DEPTH_TEST); // Default state
 	glEnable(GL_MULTISAMPLE);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glClearColor(0.12f, 0.18f, 0.12f, 1.0f);
 	initialize_camera();
@@ -887,7 +921,6 @@ void prepare_scene(void) {
 	char car[][50] = { "Data/car_body_triangles_v.txt" ,"Data/car_wheel_triangles_v.txt","Data/car_nut_triangles_v.txt" };
 	define_axes();
 	define_static_objects();
-	prepare_cctv();
 	prepare_view();
 	prepare_path();
 	define_animated_tiger();
@@ -896,7 +929,8 @@ void prepare_scene(void) {
 	prepare_geom_obj(GEOM_OBJ_ID_CAR_BODY, car[0], GEOM_OBJ_TYPE_V);
 	prepare_geom_obj(GEOM_OBJ_ID_CAR_WHEEL,car[1] , GEOM_OBJ_TYPE_V);
 	prepare_geom_obj(GEOM_OBJ_ID_CAR_NUT, car[2], GEOM_OBJ_TYPE_V);
-
+	
+	prepare_cctv();
 	set_up_scene_lights(MAIN_VIEW);
 }
 
