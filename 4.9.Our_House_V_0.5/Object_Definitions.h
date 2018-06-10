@@ -82,8 +82,11 @@ Material_Parameters material_wall;
 void prepare_rectangle() {
 	glGenBuffers(1, &rectangle_VBO);
 
+
+
 	glBindBuffer(GL_ARRAY_BUFFER, rectangle_VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_vertices), &rectangle_vertices[0][0], GL_STATIC_DRAW);
+
 
 	glGenVertexArrays(1, &rectangle_VAO);
 	glBindVertexArray(rectangle_VAO);
@@ -114,7 +117,7 @@ void prepare_rectangle() {
 }
 
 int flag_draw_wall, flag_wall_effect, flag_blind_effect, flag_cartoon_effect;
-float wall_width, cartoon_levels;
+float wall_width, cartoon_levels, blind_extent;
 
 void set_material_wall() {
 	glUniform4fv(loc_material.ambient_color, 1,material_wall.ambient_color );
@@ -146,8 +149,15 @@ void initialize_cartoon() {
 }
 
 void draw_wall(int cam_idx) {
+	glm::mat4 ModelMatrix_wall;
 	set_material_wall();
-	ModelViewMatrix[cam_idx] = glm::scale(ViewMatrix[cam_idx], glm::vec3(250.0f, 250.0f, 250.0f));
+	ModelMatrix_wall = glm::translate(glm::mat4(1), glm::vec3(240.0f, 50.0f, 70.0f));
+	ModelMatrix_wall = glm::rotate(ModelMatrix_wall, TO_RADIAN*90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix_wall = glm::rotate(ModelMatrix_wall, TO_RADIAN*90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelMatrix_wall = glm::scale(ModelMatrix_wall, glm::vec3(50.0f, 50.0f, 50.0f));
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_wall;
+
+	//ModelViewMatrix[cam_idx] = glm::scale(ViewMatrix[cam_idx], glm::vec3(250.0f, 250.0f, 250.0f));
 	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
 
 	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];

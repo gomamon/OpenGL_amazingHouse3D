@@ -24,10 +24,11 @@ uniform LIGHT u_light[NUMBER_OF_LIGHTS_SUPPORTED];
 uniform MATERIAL u_material;
 
 ////////////
-uniform bool screen_effect = false;
-uniform float screen_width = 0.125f;
+uniform bool wall_effect = false;
+uniform float wall_width = 0.125f;
 
 uniform bool u_blind_effect = false;
+uniform float u_blind_extent = 0.0f;
 
 uniform bool u_cartoon_effect = false;
 uniform float u_cartoon_levels = 3.0f;
@@ -40,6 +41,7 @@ const float one_f = 1.0f;
 
 in vec3 v_position_EC;
 in vec3 v_normal_EC;
+in vec2 v_position_sc;
 layout (location = 0) out vec4 final_color;
 
 vec4 lighting_equation(in vec3 P_EC, in vec3 N_EC) {
@@ -75,7 +77,7 @@ vec4 lighting_equation(in vec3 P_EC, in vec3 N_EC) {
 				tmp_float = dot(-L_EC, spot_dir);
 				if (tmp_float >= cos(radians(spot_cutoff_angle))) {
 					if(u_blind_effect){
-						tmp_float = pow(tmp_float, u_light[i].spot_exponent) * cos(90.0f * acos(tmp_float));
+						tmp_float = pow(tmp_float, u_light[i].spot_exponent) * cos((90.0f+u_blind_extent) * acos(tmp_float));
 					}
 					else tmp_float = pow(tmp_float, u_light[i].spot_exponent);
 
@@ -120,13 +122,13 @@ void main(void) {
 
 ////////////////////////////////
 	/*
-	if(screen_effect){
-		float x_mod, y_mode;
+	if(wall_effect == true ){
+		float x_mod, y_mod;
 		x_mod = mod(v_position_sc.x*3.0f, 1.0f);
 		y_mod = mod(v_position_sc.y*2.0f, 1.0f);
 
-		if( (x_mod > screen_width) && (x_mod < 1.0f - screen_width)&&
-			(y_mod > screen_width) && (y_mod < 1.0f - screen_width))
+		if( (x_mod > wall_width) && (x_mod < 1.0f - wall_width)&&
+			(y_mod > wall_width) && (y_mod < 1.0f - wall_width))
 			discard;
 	}
 	*/
