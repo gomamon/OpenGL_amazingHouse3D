@@ -30,6 +30,9 @@ uniform float wall_width = 0.125f;
 uniform bool u_blind_effect = false;
 uniform float u_blind_extent = 0.0f;
 
+uniform bool u_my_blind_effect = false;
+uniform float u_my_blind_extent = 0.0f;
+
 uniform bool u_cartoon_effect = false;
 uniform float u_cartoon_levels = 3.0f;
 
@@ -79,6 +82,9 @@ vec4 lighting_equation(in vec3 P_EC, in vec3 N_EC) {
 					if(u_blind_effect){
 						tmp_float = pow(tmp_float, u_light[i].spot_exponent) * cos((90.0f+u_blind_extent) * acos(tmp_float));
 					}
+					else if(u_my_blind_effect){
+						tmp_float = pow(tmp_float, u_light[i].spot_exponent) * tan((90.0f+u_my_blind_extent) * atan(tmp_float));
+					}
 					else tmp_float = pow(tmp_float, u_light[i].spot_exponent);
 
 					if(tmp_float<zero_f)	tmp_float = zero_f;
@@ -124,8 +130,8 @@ void main(void) {
 	
 	if(wall_effect == true ){
 		float x_mod, y_mod;
-		x_mod = mod(v_position_sc.x*3.0f, 1.0f);
-		y_mod = mod(v_position_sc.y*2.0f, 1.0f);
+		x_mod = mod(v_position_sc.x*4.0f, 1.0f);
+		y_mod = mod(v_position_sc.y*3.0f, 1.0f);
 
 		if( (x_mod > wall_width) && (x_mod < 1.0f - wall_width)&&
 			(y_mod > wall_width) && (y_mod < 1.0f - wall_width))

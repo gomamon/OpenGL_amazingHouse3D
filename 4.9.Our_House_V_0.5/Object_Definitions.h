@@ -116,8 +116,8 @@ void prepare_rectangle() {
 
 }
 
-int flag_draw_wall, flag_wall_effect, flag_blind_effect, flag_cartoon_effect;
-float wall_width, cartoon_levels, blind_extent;
+int flag_draw_wall, flag_wall_effect, flag_blind_effect, flag_my_blind_effect, flag_cartoon_effect;
+float wall_width, cartoon_levels, blind_extent, my_blind_extent;
 
 void set_material_wall() {
 	glUniform4fv(loc_material.ambient_color, 1,material_wall.ambient_color );
@@ -143,7 +143,9 @@ void initialize_wall() {
 void initialize_blind() {
 	flag_blind_effect = 0;
 }
-
+void initialize_my_blind() {
+	flag_my_blind_effect = 0;
+}
 void initialize_cartoon() {
 	flag_cartoon_effect = 0; cartoon_levels = 3.0f;
 }

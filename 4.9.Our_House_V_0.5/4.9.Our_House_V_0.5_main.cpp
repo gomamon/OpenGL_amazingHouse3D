@@ -15,11 +15,12 @@ loc_light_Parameters loc_light[NUMBER_OF_LIGHT_SUPPORTED];
 loc_Material_Parameters loc_material;
 //-------
 GLint loc_wall_effect, loc_wall_width;
-GLint loc_blind_effect, loc_blind_extent, loc_cartoon_effect, loc_cartoon_levels;
+GLint loc_blind_effect, loc_blind_extent, loc_my_blind_effect, loc_my_blind_extent, loc_cartoon_effect, loc_cartoon_levels;
 //-------
 GLint loc_ModelViewProjectionMatrix_PS, loc_ModelViewMatrix_PS, loc_ModelViewMatrixInvTrans_PS;
 GLint loc_ModelViewProjectionMatrix_GS, loc_ModelViewMatrix_GS, loc_ModelViewMatrixInvTrans_GS;
-
+float light_time = 0.0f;
+int light_effect = 0;
 Light_Parameters light[NUMBER_OF_LIGHT_SUPPORTED];
 int light_power[NUMBER_OF_LIGHT_SUPPORTED];
 // include glm/*.hpp only if necessary
@@ -100,15 +101,29 @@ void set_up_scene_lights(int cam_idx) {
 	light[0].position[0] = 0.0f; light[0].position[1] = 0.0f; 	// point light position in EC
 	light[0].position[2] = 0.0f; light[0].position[3] = 1.0f;
 
-	light[0].ambient_color[0] = 1.0f; light[0].ambient_color[1] = 1.0f;
-	light[0].ambient_color[2] = 1.0f; light[0].ambient_color[3] = 1.0f;
 
-	light[0].diffuse_color[0] = 0.8f; light[0].diffuse_color[1] = 0.8f;
-	light[0].diffuse_color[2] = 0.8f; light[0].diffuse_color[3] = 1.0f;
+	if(light_effect){
+		light[0].ambient_color[0] = 0.2f + 0.1f*light_time+light_time/2; 
+		light[0].ambient_color[1] = 0.3f + 0.25f*light_time;
+		light[0].ambient_color[2] = light_time/2 - 0.08f*light_time; 
+		light[0].ambient_color[3] = 1.0f;
 
-	light[0].specular_color[0] = 0.8f; light[0].specular_color[1] = 0.8f;
-	light[0].specular_color[2] = 0.8f; light[0].specular_color[3] = 1.0f;
-	
+		light[0].diffuse_color[0] = 0.8f; light[0].diffuse_color[1] = 0.8f;
+		light[0].diffuse_color[2] = 0.8f; light[0].diffuse_color[3] = 1.0f;
+
+		light[0].specular_color[0] = 0.8f; light[0].specular_color[1] = 0.8f;
+		light[0].specular_color[2] = 0.8f; light[0].specular_color[3] = 1.0f;
+	}
+	else {
+		light[0].ambient_color[0] = 1.0f; light[0].ambient_color[1] = 1.0f;
+		light[0].ambient_color[2] = 1.0f; light[0].ambient_color[3] = 1.0f;
+
+		light[0].diffuse_color[0] = 0.8f; light[0].diffuse_color[1] = 0.8f;
+		light[0].diffuse_color[2] = 0.8f; light[0].diffuse_color[3] = 1.0f;
+
+		light[0].specular_color[0] = 0.8f; light[0].specular_color[1] = 0.8f;
+		light[0].specular_color[2] = 0.8f; light[0].specular_color[3] = 1.0f;
+	}
 
 	// glm::vec3(210.0f, 112.5f, 49.0)
 	// spot_light_WC: use light 1
@@ -181,38 +196,7 @@ void set_up_scene_lights(int cam_idx) {
 		glUniform1f(loc_light[i].spot_cutoff_angle, light[i].spot_cutoff_angle);
 		glUniform1f(loc_light[i].spot_exponent, light[i].spot_exponent);
 	}
-	
-
-	/*
-	glUniform1i(loc_light[0].light_on, light[0].light_on);
-	glUniform4fv(loc_light[0].position, 1, light[0].position);
-	glUniform4fv(loc_light[0].ambient_color, 1, light[0].ambient_color);
-	glUniform4fv(loc_light[0].diffuse_color, 1, light[0].diffuse_color);
-	glUniform4fv(loc_light[0].specular_color, 1, light[0].specular_color);
-
-	glUniform1i(loc_light[1].light_on, light[1].light_on);
-	//need to supply position in EC for shading
-		glm::vec4 position_EC = ViewMatrix[cam_idx] * glm::vec4(light[1].position[0], light[1].position[1],
-			light[1].position[2], light[1].position[3]);
-		glUniform4fv(loc_light[1].position, 1, &position_EC[0]);
-		glUniform4fv(loc_light[1].ambient_color, 1, light[1].ambient_color);
-		glUniform4fv(loc_light[1].diffuse_color, 1, light[1].diffuse_color);
-		glUniform4fv(loc_light[1].specular_color, 1, light[1].specular_color);
-
-		*/
-	// need to supply direction in EC for shading in this example shader
-	// note that the viewing transform is a rigid body transform
-	// thus transpose(inverse(mat3(ViewMatrix)) = mat3(ViewMatrix)
-		/*
-		glm::vec3 direction_EC = glm::mat3(ViewMatrix[cam_idx]) * glm::vec3(light[1].spot_direction[0], light[1].spot_direction[1],
-		light[1].spot_direction[2]);
-
-		glUniform3fv(loc_light[1].spot_direction, 1, &direction_EC[0]);
-		glUniform1f(loc_light[1].spot_cutoff_angle, light[1].spot_cutoff_angle);
-		glUniform1f(loc_light[1].spot_exponent, light[1].spot_exponent);
-		*/
-		glUseProgram(0);
-
+	glUseProgram(0);
 
 }
 
@@ -502,6 +486,9 @@ void keyboard(unsigned char key, int x, int y) {
 			break;
 		}
 		break;
+	case 'l':
+		light_effect = 1 - light_effect;
+		break;
 	case 'f':
 		polygon_fill_on = 1 - polygon_fill_on;
 		if (polygon_fill_on) {
@@ -601,6 +588,21 @@ void keyboard(unsigned char key, int x, int y) {
 	//	initialize_lights_and_material();
 		glutPostRedisplay();		
 		break;
+	case 'n':
+		if(flag_blind_effect) {
+			flag_blind_effect = 0;
+			glUseProgram(h_ShaderProgram_PS);
+			glUniform1i(loc_blind_effect, flag_blind_effect);
+			glUseProgram(0);
+			glutPostRedisplay();
+		}
+		flag_my_blind_effect = 1 - flag_my_blind_effect;
+		glUseProgram(h_ShaderProgram_PS);
+		glUniform1i(loc_my_blind_effect, flag_my_blind_effect);
+		glUseProgram(0);
+		//	initialize_lights_and_material();
+		glutPostRedisplay();
+		break;
 	case '+':
 		if (flag_blind_effect) {
 			blind_extent += 10.0f;
@@ -608,6 +610,15 @@ void keyboard(unsigned char key, int x, int y) {
 				blind_extent = -90;
 			glUseProgram(h_ShaderProgram_PS);
 			glUniform1f(loc_blind_extent, blind_extent);
+			glUseProgram(0);
+			glutPostRedisplay();
+		}
+		else if(flag_my_blind_effect) {
+			my_blind_extent += 10.0f;
+			if(my_blind_extent > 90)
+				my_blind_extent = -90;
+			glUseProgram(h_ShaderProgram_PS);
+			glUniform1f(loc_my_blind_extent, my_blind_extent);
 			glUseProgram(0);
 			glutPostRedisplay();
 		}
@@ -621,7 +632,15 @@ void keyboard(unsigned char key, int x, int y) {
 			glUniform1f(loc_blind_extent, blind_extent);
 			glUseProgram(0);
 			glutPostRedisplay();
-
+		}
+		else if(flag_my_blind_effect) {
+			my_blind_extent -= 10.0f;
+			if(my_blind_extent < -90)
+				my_blind_extent = 90;
+			glUseProgram(h_ShaderProgram_PS);
+			glUniform1f(loc_my_blind_extent, my_blind_extent);
+			glUseProgram(0);
+			glutPostRedisplay();
 		}
 		break;
 	case 'x':
@@ -821,7 +840,7 @@ void reshape(int width, int height) {
 
 void timer_scene(int timestamp_scene) {
 	rotation_angle_car = (timestamp_scene % 360)*TO_RADIAN;
-
+	light_time = timestamp_scene % 10;
 	tiger_time = (timestamp_scene)%end_time;
 	tiger_data.cur_frame = timestamp_scene % N_TIGER_FRAMES;
 	tiger_data.rotation_angle = (timestamp_scene % 360)*TO_RADIAN;
@@ -905,8 +924,10 @@ void prepare_shader_program(void) {
 	loc_wall_effect = glGetUniformLocation(h_ShaderProgram_PS, "wall_effect");
 	loc_wall_width = glGetUniformLocation(h_ShaderProgram_PS, "wall_width");
 	loc_blind_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_blind_effect");
+	loc_my_blind_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_my_blind_effect");
 	//loc_blind_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_blind_effect");
 	loc_blind_extent = glGetUniformLocation(h_ShaderProgram_PS, "u_blind_extent");
+	loc_my_blind_extent = glGetUniformLocation(h_ShaderProgram_PS, "u_my_blind_extent");
 	loc_cartoon_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_cartoon_effect");
 	loc_cartoon_levels = glGetUniformLocation(h_ShaderProgram_PS, "u_cartoon_levels");
 	
@@ -915,6 +936,7 @@ void prepare_shader_program(void) {
 	glUniform1f(loc_wall_width, 0.1f);
 
 	glUniform1i(loc_blind_effect, 0);
+	glUniform1i(loc_my_blind_effect, 0);
 	glUniform1i(loc_cartoon_effect, 0);
 
 	glUniform1f(loc_cartoon_levels, 3.0f);
@@ -1082,6 +1104,7 @@ void initialize_OpenGL(void) {
 	prepare_rectangle();
 	initialize_wall();
 	initialize_blind();
+	initialize_my_blind();
 	initialize_cartoon();
 	//
 	initialize_lights_and_material();
