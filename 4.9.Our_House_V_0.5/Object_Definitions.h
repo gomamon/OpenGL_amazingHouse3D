@@ -133,8 +133,8 @@ void draw_wall() {
 	glBindVertexArray(rectangle_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
-}*/
-
+}
+*/
 void initialize_wall() {
 	flag_draw_wall = flag_wall_effect = 0;
 	wall_width = 0.125f;
@@ -151,10 +151,10 @@ void initialize_cartoon() {
 void draw_wall(int cam_idx) {
 	glm::mat4 ModelMatrix_wall;
 	set_material_wall();
-	ModelMatrix_wall = glm::translate(glm::mat4(1), glm::vec3(240.0f, 50.0f, 70.0f));
-	ModelMatrix_wall = glm::rotate(ModelMatrix_wall, TO_RADIAN*90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix_wall = glm::translate(glm::mat4(1), glm::vec3(190.0f, 140.0f, 40.0f));
+	//ModelMatrix_wall = glm::rotate(ModelMatrix_wall, TO_RADIAN*90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelMatrix_wall = glm::rotate(ModelMatrix_wall, TO_RADIAN*90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelMatrix_wall = glm::scale(ModelMatrix_wall, glm::vec3(50.0f, 50.0f, 50.0f));
+	ModelMatrix_wall = glm::scale(ModelMatrix_wall, glm::vec3(20.0f, 20.0f, 60.0f));
 	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_wall;
 
 	//ModelViewMatrix[cam_idx] = glm::scale(ViewMatrix[cam_idx], glm::vec3(250.0f, 250.0f, 250.0f));

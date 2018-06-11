@@ -236,9 +236,7 @@ void display_camera(int cam_idx) {
 	else		glUseProgram(h_ShaderProgram_PS);
 
 	
-
-	draw_wall(cam_idx);
-
+	
 	draw_static_object(&(static_objects[OBJ_BUILDING]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_MINIBUILDING]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_TABLE]), 0, cam_idx);
@@ -262,7 +260,9 @@ void display_camera(int cam_idx) {
 	draw_static_object(&(static_objects[OBJ_GODZILLA]), 0, cam_idx);
 	draw_static_object(&(static_objects[OBJ_IRONMAN]), 0, cam_idx);
 
-	
+	if(flag_draw_wall)
+		draw_wall(cam_idx);
+
 	draw_animated_tiger(cam_idx);
 	display_car(cam_idx);
 	//bbbbbbbbb
@@ -562,7 +562,7 @@ void keyboard(unsigned char key, int x, int y) {
 		}
 		break;
 	//--------------------------------------------
-	case's':
+	case'w':
 		flag_draw_wall = 1 - flag_draw_wall;
 		glutPostRedisplay();
 		break;
@@ -573,14 +573,33 @@ void keyboard(unsigned char key, int x, int y) {
 			glutPostRedisplay();
 		}
 		break;
+	case '[':
+		if(flag_draw_wall) {
+			wall_width += 0.05f;
+			if(wall_width >= 0.5)
+				wall_width = 0.1;
+			glUseProgram(h_ShaderProgram_PS);
+			glUniform1f(loc_wall_width, wall_width);
+			glutPostRedisplay();
+		}
+		break;
+	case ']':
+		if(flag_draw_wall) {
+			wall_width -= 0.05f;
+			if(wall_width <= 0.1f)
+				wall_width = 0.5f;
+			glUseProgram(h_ShaderProgram_PS);
+			glUniform1f(loc_wall_width, wall_width);
+			glutPostRedisplay();
+		}
+		break;
 	case 'b':
 		flag_blind_effect = 1 - flag_blind_effect;
 		glUseProgram(h_ShaderProgram_PS);
 		glUniform1i(loc_blind_effect, flag_blind_effect);
 		glUseProgram(0);
 	//	initialize_lights_and_material();
-		glutPostRedisplay();
-		
+		glutPostRedisplay();		
 		break;
 	case '+':
 		if (flag_blind_effect) {
