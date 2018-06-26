@@ -27,8 +27,9 @@ typedef struct _Object {
 	Material material[N_MAX_GEOM_COPIES];
 } Object;
 
-#define N_MAX_STATIC_OBJECTS		14
+#define N_MAX_STATIC_OBJECTS		15
 Object static_objects[N_MAX_STATIC_OBJECTS]; // allocage memory dynamically every time it is needed rather than using a static array
+Object car_objects[6];
 int n_static_objects = 0;
 
 #define OBJ_BUILDING		0
@@ -47,6 +48,143 @@ int n_static_objects = 0;
 #define OBJ_IRONMAN				13
 
 
+
+GLfloat *vec_to_float(glm::vec4 vec) {
+	GLfloat f4[4];
+	f4[0] = vec.x;
+	f4[1] = vec.y;
+	f4[2] = vec.z;
+	f4[3] = vec.w;
+
+	return f4;
+}
+
+void set_material(Object *obj_ptr) {
+
+	// assume ShaderProgram_PS is used
+	glUniform4fv(loc_material.ambient_color, 1, vec_to_float(obj_ptr->material[0].ambient));
+	glUniform4fv(loc_material.diffuse_color, 1, vec_to_float(obj_ptr->material[0].diffuse));
+	glUniform4fv(loc_material.specular_color, 1, vec_to_float(obj_ptr->material[0].specular));
+	glUniform1f(loc_material.specular_exponent, obj_ptr->material[0].exponent);
+	glUniform4fv(loc_material.emissive_color, 1, vec_to_float(obj_ptr->material[0].emission));
+}
+
+
+//------------------------WALL----------------------------------
+GLuint rectangle_VBO, rectangle_VAO;
+GLfloat rectangle_vertices[12][3] = {
+	{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f},
+	{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f},
+	{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}
+};
+
+Material_Parameters material_wall;
+void prepare_rectangle() {
+	glGenBuffers(1, &rectangle_VBO);
+
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, rectangle_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_vertices), &rectangle_vertices[0][0], GL_STATIC_DRAW);
+
+
+	glGenVertexArrays(1, &rectangle_VAO);
+	glBindVertexArray(rectangle_VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, rectangle_VBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), BUFFER_OFFSET(0));
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), BUFFER_OFFSET(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	material_wall.ambient_color[0] = 0.1745f; material_wall.ambient_color[1] = 0.0413f;
+	material_wall.ambient_color[2] = 0.0117f; material_wall.ambient_color[3] = 1.0f;
+
+	material_wall.diffuse_color[0] = 0.6142f; material_wall.diffuse_color[1] = 0.0413f;
+	material_wall.diffuse_color[2] = 0.0413f; material_wall.diffuse_color[3] = 1.0f;
+
+	material_wall.specular_color[0] = 0.7278f;	material_wall.specular_color[1] = 0.6269f;
+	material_wall.specular_color[2] = 0.6269f;	material_wall.specular_color[3] = 1.0f;
+
+	material_wall.specular_exponent = 20.5f;
+
+	material_wall.emissive_color[0] = 0.0f;	material_wall.emissive_color[1] = 0.0f;
+	material_wall.emissive_color[2] = 0.0f;	material_wall.emissive_color[3] = 1.0f;
+
+}
+
+int flag_draw_wall, flag_wall_effect, flag_blind_effect, flag_my_blind_effect, flag_cartoon_effect;
+float wall_width, cartoon_levels, blind_extent, my_blind_extent;
+
+void set_material_wall() {
+	glUniform4fv(loc_material.ambient_color, 1,material_wall.ambient_color );
+	glUniform4fv(loc_material.diffuse_color, 1, material_wall.diffuse_color);
+	glUniform4fv(loc_material.specular_color, 1, material_wall.specular_color);
+	glUniform1f(loc_material.specular_exponent, material_wall.specular_exponent);
+	glUniform4fv(loc_material.emissive_color, 1, material_wall.emissive_color);
+}
+/*
+void draw_wall() {
+	glFrontFace(GL_CCW);
+
+	glBindVertexArray(rectangle_VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+*/
+void initialize_wall() {
+	flag_draw_wall = flag_wall_effect = 0;
+	wall_width = 0.125f;
+}
+
+void initialize_blind() {
+	flag_blind_effect = 0;
+}
+void initialize_my_blind() {
+	flag_my_blind_effect = 0;
+}
+void initialize_cartoon() {
+	flag_cartoon_effect = 0; cartoon_levels = 3.0f;
+}
+
+void draw_wall(int cam_idx) {
+	glm::mat4 ModelMatrix_wall;
+	set_material_wall();
+	ModelMatrix_wall = glm::translate(glm::mat4(1), glm::vec3(190.0f, 140.0f, 40.0f));
+	//ModelMatrix_wall = glm::rotate(ModelMatrix_wall, TO_RADIAN*90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix_wall = glm::rotate(ModelMatrix_wall, TO_RADIAN*90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	ModelMatrix_wall = glm::scale(ModelMatrix_wall, glm::vec3(20.0f, 20.0f, 60.0f));
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_wall;
+
+	//ModelViewMatrix[cam_idx] = glm::scale(ViewMatrix[cam_idx], glm::vec3(250.0f, 250.0f, 250.0f));
+	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+
+	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
+
+	glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+
+	glUniform1i(loc_wall_effect, flag_wall_effect);
+	
+	glFrontFace(GL_CCW);
+
+	glBindVertexArray(rectangle_VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+
+	glUniform1i(loc_wall_effect, 0);
+
+}
+
+//---------------------------------------------------------------------------
+//=========================================
+
+
+
+//======================================================
 ///////////////////////car///////////////
 
 glm::mat4 ModelMatrix_CAR_BODY, ModelMatrix_CAR_WHEEL, ModelMatrix_CAR_NUT, ModelMatrix_CAR_DRIVER;
@@ -194,6 +332,9 @@ void prepare_geom_obj(int geom_obj_ID, char *filename, GEOM_OBJ_TYPE geom_obj_ty
 		geom_obj_vertices[geom_obj_ID], GL_STATIC_DRAW);
 	glVertexAttribPointer(LOC_VERTEX, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(LOC_NORMAL, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
 	if (geom_obj_type >= GEOM_OBJ_TYPE_VN) {
 		glVertexAttribPointer(LOC_NORMAL, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(3 * sizeof(float)));
 		glEnableVertexAttribArray(1);
@@ -207,6 +348,7 @@ void prepare_geom_obj(int geom_obj_ID, char *filename, GEOM_OBJ_TYPE geom_obj_ty
 
 	free(geom_obj_vertices[geom_obj_ID]);
 }
+
 
 void draw_geom_obj(int geom_obj_ID) {
 	glBindVertexArray(geom_obj_VAO[geom_obj_ID]);
@@ -222,37 +364,95 @@ void free_geom_obj(int geom_obj_ID) {
 void draw_wheel_and_nut(int cam_idx) {
 	// angle is used in Hierarchical_Car_Correct later
 	int i;
+	
+	car_objects[GEOM_OBJ_ID_CAR_WHEEL].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	car_objects[GEOM_OBJ_ID_CAR_WHEEL].material[0].ambient = glm::vec4(0.1745f, 0.01175f, 0.01175f, 1.0f);
+	car_objects[GEOM_OBJ_ID_CAR_WHEEL].material[0].diffuse = glm::vec4(0.61424f, 0.04136f, 0.04136f, 1.0f);
+	car_objects[GEOM_OBJ_ID_CAR_WHEEL].material[0].specular = glm::vec4(0.727811f, 0.626959f, 0.626959f, 1.0f);
+	car_objects[GEOM_OBJ_ID_CAR_WHEEL].material[0].exponent = 128.0f*0.6;
 
-	glUniform3f(loc_primitive_color, 0.800f, 0.808f, 0.020f); // color name: DarkTurquoise
-	draw_geom_obj(GEOM_OBJ_ID_CAR_WHEEL); // draw wheel
+	//glUniform3f(loc_primitive_color, 0.20f, 0.20f, 1.0f); // color name: Aquamarine
+	set_material(&car_objects[GEOM_OBJ_ID_CAR_WHEEL]);
+	draw_geom_obj(GEOM_OBJ_ID_CAR_WHEEL);
+
+
+	//glUniform3f(loc_primitive_color, 0.800f, 0.808f, 0.020f); // color name: DarkTurquoise
+	//draw_geom_obj(GEOM_OBJ_ID_CAR_WHEEL); // draw wheel
 
 	for (i = 0; i < 5; i++) {
 		ModelMatrix_CAR_NUT = glm::rotate(ModelMatrix_CAR_WHEEL, TO_RADIAN*72.0f*i, glm::vec3(0.0f, 0.0f, 1.0f));
 		ModelMatrix_CAR_NUT = glm::translate(ModelMatrix_CAR_NUT, glm::vec3(rad - 0.5f, 0.0f, ww));
 		ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_NUT;
-		glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_CAR_NUT;
+		ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
 
+		if (shader_mode==GS) {
+			glUniformMatrix4fv(loc_ModelViewProjectionMatrix_GS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+			glUniformMatrix4fv(loc_ModelViewMatrix_GS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+			glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_GS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+			glUniform3f(loc_primitive_color, 0.690f, 0.769f, 0.871f);
+		}
+		else {
+			glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+			glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+			glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+		}
 		glUniform3f(loc_primitive_color, 0.690f, 0.769f, 0.871f); // color name: LightSteelBlue
+
 		draw_geom_obj(GEOM_OBJ_ID_CAR_NUT); // draw i-th nut
 	}
+	//glUseProgram(0);
 }
 
 void draw_car_dummy(int cam_idx) {
+
+	car_objects[GEOM_OBJ_ID_CAR_BODY].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	car_objects[GEOM_OBJ_ID_CAR_BODY].material[0].ambient = glm::vec4(0.1745f, 0.01175f, 0.01175f, 1.0f);
+	car_objects[GEOM_OBJ_ID_CAR_BODY].material[0].diffuse = glm::vec4(0.61424f, 0.04136f, 0.04136f, 1.0f);
+	car_objects[GEOM_OBJ_ID_CAR_BODY].material[0].specular = glm::vec4(0.727811f, 0.626959f, 0.626959f, 1.0f);
+	car_objects[GEOM_OBJ_ID_CAR_BODY].material[0].exponent = 128.0f*0.6;
+
 	glUniform3f(loc_primitive_color, 0.20f, 0.20f, 1.0f); // color name: Aquamarine
+	set_material(&car_objects[GEOM_OBJ_ID_CAR_BODY]);
 	draw_geom_obj(GEOM_OBJ_ID_CAR_BODY); // draw body
+
+
 
 
 	ModelMatrix_CAR_WHEEL = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(-3.9f, -3.5f, 4.5f));
 	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, -30 * TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 200 * rotation_angle_car*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
+	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+
+	if (shader_mode == GS) {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_GS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_GS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_GS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
+	else {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
 	draw_wheel_and_nut(cam_idx);  // draw wheel 0
 
 	ModelMatrix_CAR_WHEEL = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(3.9f, -3.5f, 4.5f));
 	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 200 * rotation_angle_car*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
+	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+	if (shader_mode == GS) {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_GS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_GS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_GS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
+	else {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
 	draw_wheel_and_nut(cam_idx);  // draw wheel 1
 
 	ModelMatrix_CAR_WHEEL = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(-3.9f, -3.5f, -4.5f));
@@ -260,21 +460,44 @@ void draw_car_dummy(int cam_idx) {
 	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 30 * TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 80 * rotation_angle_car*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
+	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+	if (shader_mode == GS) {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_GS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_GS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_GS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
+	else {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
 	draw_wheel_and_nut(cam_idx);  // draw wheel 2
 
 	ModelMatrix_CAR_WHEEL = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(3.9f, -3.5f, -4.5f));
 	ModelMatrix_CAR_WHEEL = glm::scale(ModelMatrix_CAR_WHEEL, glm::vec3(1.0f, 1.0f, -1.0f));
 	ModelMatrix_CAR_WHEEL = glm::rotate(ModelMatrix_CAR_WHEEL, 80 * rotation_angle_car*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_CAR_WHEEL;
+	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+	if (shader_mode == GS) {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_GS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_GS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_GS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
+	else {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
 	draw_wheel_and_nut(cam_idx);  // draw wheel 3
+	//glUseProgram(0);
 }
 
 
 void display_car(int cam_idx) {
 
-	ModelMatrix_CAR_BODY = glm::translate(glm::mat4(1.0f),glm::vec3(40.0f, 87.0f, 0.0f));
+	ModelMatrix_CAR_BODY = glm::translate(glm::mat4(1.0f),glm::vec3(40.0f, 87.0f, 5.0f));
 	ModelMatrix_CAR_BODY = glm::rotate(ModelMatrix_CAR_BODY, 90.0f*TO_RADIAN, glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelMatrix_CAR_BODY = glm::rotate(ModelMatrix_CAR_BODY, -3*rotation_angle_car, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrix_CAR_BODY = glm::translate(ModelMatrix_CAR_BODY, glm::vec3(14.0f, 0.0f, 0.0f));
@@ -282,9 +505,20 @@ void display_car(int cam_idx) {
 	
 
 	ModelViewProjectionMatrix = ViewProjectionMatrix[cam_idx] * ModelMatrix_CAR_BODY;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-
+	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * ModelMatrix_CAR_BODY;
+ 	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+	if (shader_mode == GS) {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_GS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_GS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_GS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
+	else {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
 	draw_car_dummy(cam_idx);
+	//glUseProgram(0);
 
 }
 
@@ -483,7 +717,7 @@ void prepare_geom_of_static_object(Object *obj_ptr) {
 	glGenBuffers(1, &(obj_ptr->VBO));
 
 	glBindBuffer(GL_ARRAY_BUFFER, obj_ptr->VBO);
-	glBufferData(GL_ARRAY_BUFFER, obj_ptr->n_triangles*n_bytes_per_triangle, obj_ptr->vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (obj_ptr->n_triangles)*n_bytes_per_triangle, obj_ptr->vertices, GL_STATIC_DRAW);
 
 	compute_AABB(obj_ptr);
 	free(obj_ptr->vertices);
@@ -495,6 +729,9 @@ void prepare_geom_of_static_object(Object *obj_ptr) {
 	glBindBuffer(GL_ARRAY_BUFFER, obj_ptr->VBO);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -560,10 +797,13 @@ void define_static_objects(void) {
 
     static_objects[OBJ_BUILDING].ModelMatrix[0] = glm::mat4(1.0f);
 	
+	//rgb(60, 163, 232)
+	//rgb(6, 33, 51)
+	//rgb(165, 209, 238)
 	static_objects[OBJ_BUILDING].material[0].emission = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].ambient = glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].diffuse = glm::vec4(0.54f, 0.89f, 0.63f, 1.0f);
-	static_objects[OBJ_BUILDING].material[0].specular = glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
+	static_objects[OBJ_BUILDING].material[0].ambient = glm::vec4(6 / 255.0f, 33 / 255.0f, 51 / 255.0f, 1.0f); //glm::vec4(0.135f, 0.2225f, 0.1575f, 1.0f);
+	static_objects[OBJ_BUILDING].material[0].diffuse = glm::vec4(60 / 255.0f, 163 / 255.0f, 232 / 255.0f, 1.0f);
+	static_objects[OBJ_BUILDING].material[0].specular = glm::vec4(165 / 255.0f, 209 / 255.0f, 238 / 255.0f, 1.0f);//glm::vec4(170 / 255.0f, 240 / 255.0f, 190 / 255.0f, 1.0f); //glm::vec4(0.316228f, 0.316228f, 0.316228f, 1.0f);
 	static_objects[OBJ_BUILDING].material[0].exponent = 128.0f*0.1f;
 
 	// building
@@ -844,21 +1084,36 @@ void define_static_objects(void) {
 	static_objects[OBJ_COW2].material[0].specular = glm::vec4(0.992157f, 0.941176f, 0.807843f, 1.0f);
 	static_objects[OBJ_COW2].material[0].exponent = 0.21794872f*0.6f;
 
-	n_static_objects = 11;
+	n_static_objects = 15;
 }
+
+
+
 
 void draw_static_object(Object *obj_ptr, int instance_ID, int cam_idx) {
 	glFrontFace(obj_ptr->front_face_mode);
 
+	set_material(obj_ptr);//material qhsownrl!
+
 	ModelViewMatrix[cam_idx] = ViewMatrix[cam_idx] * obj_ptr->ModelMatrix[instance_ID];
 	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-
+	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+	
+	if (shader_mode == GS) {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_GS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_GS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_GS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
+	else {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
 	glUniform3f(loc_primitive_color, obj_ptr->material[instance_ID].diffuse.r,
 		obj_ptr->material[instance_ID].diffuse.g, obj_ptr->material[instance_ID].diffuse.b);
 
 	glBindVertexArray(obj_ptr->VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3 * obj_ptr->n_triangles);
+	glDrawArrays(GL_TRIANGLES, 0, 3*obj_ptr->n_triangles);
 	glBindVertexArray(0);
 }
 
@@ -977,8 +1232,11 @@ void define_animated_tiger(void) {
 		tiger[i].material[0].diffuse = glm::vec4(0.780392f, 0.568627f, 0.113725f, 1.0f);
 		tiger[i].material[0].specular = glm::vec4(0.992157f, 0.941176f, 0.807843f, 1.0f);
 		tiger[i].material[0].exponent = 128.0f*0.21794872f;
+
 	}
 }
+
+
 
 int end_time = 1000;
 float tiger_time = 0;
@@ -1137,14 +1395,28 @@ void draw_animated_tiger(int cam_idx) {
 		}
 	}
 
+	//set tiger
+	glUniform4fv(loc_material.ambient_color, 1, vec_to_float(tiger[tiger_data.cur_frame].material[0].ambient));
+	glUniform4fv(loc_material.diffuse_color, 1, vec_to_float(tiger[tiger_data.cur_frame].material[0].diffuse));
+	glUniform4fv(loc_material.specular_color, 1, vec_to_float(tiger[tiger_data.cur_frame].material[0].specular));
+	glUniform1f(loc_material.specular_exponent, tiger[tiger_data.cur_frame].material[0].exponent);
+	glUniform4fv(loc_material.emissive_color, 1, vec_to_float(tiger[tiger_data.cur_frame].material[0].ambient));
+
+
+	
 	
 	ModelViewProjectionMatrix = ProjectionMatrix[cam_idx] * ModelViewMatrix[cam_idx];
-
-
-
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-
-	
+	ModelViewMatrixInvTrans = glm::inverseTranspose(glm::mat3(ModelViewMatrix[cam_idx]));
+	if (shader_mode == GS) {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_GS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_GS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_GS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
+	else {
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix_PS, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		glUniformMatrix4fv(loc_ModelViewMatrix_PS, 1, GL_FALSE, &ModelViewMatrix[cam_idx][0][0]);
+		glUniformMatrix3fv(loc_ModelViewMatrixInvTrans_PS, 1, GL_FALSE, &ModelViewMatrixInvTrans[0][0]);
+	}
 	glUniform3f(loc_primitive_color, tiger[tiger_data.cur_frame].material[0].diffuse.r,
 		tiger[tiger_data.cur_frame].material[0].diffuse.g, tiger[tiger_data.cur_frame].material[0].diffuse.b);
 
@@ -1157,7 +1429,7 @@ void draw_animated_tiger(int cam_idx) {
 	draw_axes(cam_idx);
 
 
-
+	//glUseProgram(0);
 }
 
 void cleanup_OpenGL_stuffs(void) {
